@@ -18,16 +18,18 @@ A full copy of the license may be found in the projects root directory
 #include "storage.h"
 void writeAllConfig()
 {
-  writeConfig(1);
-  if (eepromWritesPending == false) { writeConfig(2); }
-  if (eepromWritesPending == false) { writeConfig(3); }
-  if (eepromWritesPending == false) { writeConfig(4); }
-  if (eepromWritesPending == false) { writeConfig(5); }
-  if (eepromWritesPending == false) { writeConfig(6); }
-  if (eepromWritesPending == false) { writeConfig(7); }
-  if (eepromWritesPending == false) { writeConfig(8); }
-  if (eepromWritesPending == false) { writeConfig(9); }
-  if (eepromWritesPending == false) { writeConfig(10); }
+  static byte current_page = 1;
+  digitalWrite(LED_BUILTIN, HIGH);
+  
+  while(current_page <= 10)
+  {
+    writeConfig(current_page);
+    if(eepromWritesPending) return;
+    current_page++;
+  }
+
+  current_page = 1; // reset page counter
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 
