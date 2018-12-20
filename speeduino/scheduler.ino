@@ -895,7 +895,7 @@ static inline void fuelSchedule1Interrupt() //Most ARM chips can simply call a f
     {
       //To use timer queue, change fuelShedule1 to timer3Aqueue[0];
       if (configPage2.injLayout == INJ_SEMISEQUENTIAL) { openInjector1and4(); }
-      else { openInjector1(); }
+      else { openInjector(1); }
       fuelSchedule1.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
       FUEL1_COMPARE = FUEL1_COUNTER + uS_TO_TIMER_COMPARE_SLOW(fuelSchedule1.duration); //Doing this here prevents a potential overflow on restarts
     }
@@ -903,7 +903,7 @@ static inline void fuelSchedule1Interrupt() //Most ARM chips can simply call a f
     {
        //timer3Aqueue[0]->EndCallback();
        if (configPage2.injLayout == INJ_SEMISEQUENTIAL) { closeInjector1and4(); }
-       else { closeInjector1(); }
+       else { closeInjector(1); }
        fuelSchedule1.Status = OFF; //Turn off the schedule
        fuelSchedule1.schedulesSet = 0;
        //FUEL1_COMPARE = fuelSchedule1.endCompare;
@@ -932,7 +932,7 @@ static inline void fuelSchedule2Interrupt() //Most ARM chips can simply call a f
     {
       //fuelSchedule2.StartCallback();
       if (configPage2.injLayout == INJ_SEMISEQUENTIAL) { openInjector2and3(); }
-      else { openInjector2(); }
+      else { openInjector(2); }
       fuelSchedule2.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
       FUEL2_COMPARE = FUEL2_COUNTER + uS_TO_TIMER_COMPARE_SLOW(fuelSchedule2.duration); //Doing this here prevents a potential overflow on restarts
     }
@@ -940,7 +940,7 @@ static inline void fuelSchedule2Interrupt() //Most ARM chips can simply call a f
     {
        //fuelSchedule2.EndCallback();
        if (configPage2.injLayout == INJ_SEMISEQUENTIAL) { closeInjector2and3(); }
-       else { closeInjector2(); }
+       else { closeInjector(2); }
        fuelSchedule2.Status = OFF; //Turn off the schedule
        fuelSchedule2.schedulesSet = 0;
 
@@ -968,7 +968,7 @@ static inline void fuelSchedule3Interrupt() //Most ARM chips can simply call a f
       //fuelSchedule3.StartCallback();
       //Hack for 5 cylinder
       if(channel5InjEnabled) { openInjector3and5(); }
-      else { openInjector3(); }
+      else { openInjector(3); }
       fuelSchedule3.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
       FUEL3_COMPARE = FUEL3_COUNTER + uS_TO_TIMER_COMPARE_SLOW(fuelSchedule3.duration); //Doing this here prevents a potential overflow on restarts
     }
@@ -1003,14 +1003,14 @@ static inline void fuelSchedule4Interrupt() //Most ARM chips can simply call a f
     if (fuelSchedule4.Status == PENDING) //Check to see if this schedule is turn on
     {
       //fuelSchedule4.StartCallback();
-      openInjector4();
+      openInjector(4);
       fuelSchedule4.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
       FUEL4_COMPARE = FUEL4_COUNTER + uS_TO_TIMER_COMPARE_SLOW(fuelSchedule4.duration); //Doing this here prevents a potential overflow on restarts
     }
     else if (fuelSchedule4.Status == RUNNING)
     {
        //fuelSchedule4.EndCallback();
-       closeInjector4();
+       closeInjector(4);
        fuelSchedule4.Status = OFF; //Turn off the schedule
        fuelSchedule4.schedulesSet = 0;
 

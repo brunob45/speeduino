@@ -522,7 +522,17 @@ struct config2 {
 
   int8_t EMAPMin; //Must be signed
   uint16_t EMAPMax;
-  byte unused1_70[58];
+
+  byte inj1OutputInverted:1;
+  byte inj2OutputInverted:1;
+  byte inj3OutputInverted:1;
+  byte inj4OutputInverted:1;
+  byte inj5OutputInverted:1;
+  byte inj6OutputInverted:1;
+  byte inj7OutputInverted:1;
+  byte inj8OutputInverted:1;
+  
+  byte unused1_70[57];
 
 #if defined(CORE_AVR)
   };

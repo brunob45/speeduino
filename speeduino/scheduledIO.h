@@ -39,6 +39,8 @@ void endCoil1and3Charge();
 void beginCoil2and4Charge();
 void endCoil2and4Charge();
 
+#define openInjector(n) configPage2.inj##n##OutputInverted ? *inj##n##_pin_port |= (inj##n##_pin_mask) : *inj##n##_pin_port &= ~(inj##n##_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ##n )
+#define closeInjector(n) configPage2.inj##n##OutputInverted ? *inj##n##_pin_port &= ~(inj##n##_pin_mask) : *inj##n##_pin_port |= (inj##n##_pin_mask); BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ##n )
 
 #define openInjector1() *inj1_pin_port |= (inj1_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ1)
 #define closeInjector1() *inj1_pin_port &= ~(inj1_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ1)
@@ -58,14 +60,14 @@ void endCoil2and4Charge();
 #define openInjector8() *inj8_pin_port |= (inj8_pin_mask);
 #define closeInjector8() *inj8_pin_port &= ~(inj8_pin_mask);
 
-#define openInjector1and4() openInjector1(); openInjector4()
-#define closeInjector1and4() closeInjector1(); closeInjector4()
-#define openInjector2and3() openInjector2(); openInjector3()
-#define closeInjector2and3() closeInjector2(); closeInjector3()
+#define openInjector1and4() openInjector(1); openInjector(4)
+#define closeInjector1and4() closeInjector(1); closeInjector(4)
+#define openInjector2and3() openInjector(2); openInjector(3)
+#define closeInjector2and3() closeInjector(2); closeInjector(3)
 
 //5 cylinder support doubles up injector 3 as being closese to inj 5 (Crank angle)
-#define openInjector3and5() openInjector3(); openInjector5()
-#define closeInjector3and5() closeInjector3(); closeInjector5()
+#define openInjector3and5() openInjector(3); openInjector5()
+#define closeInjector3and5() closeInjector(3); closeInjector5()
 
 #define coil1Low() (*ign1_pin_port &= ~(ign1_pin_mask))
 #define coil1High() (*ign1_pin_port |= (ign1_pin_mask))

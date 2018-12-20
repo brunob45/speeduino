@@ -237,10 +237,10 @@ void setup()
   endCoil5Charge();
 
   //Similar for injectors, make sure they're turned off
-  closeInjector1();
-  closeInjector2();
-  closeInjector3();
-  closeInjector4();
+  closeInjector(1);
+  closeInjector(2);
+  closeInjector(3);
+  closeInjector(4);
   closeInjector5();
 
   //Set the tacho output default state
