@@ -7,7 +7,7 @@ class i2cEEPROMClass {
   const int device_address = 0b1010101;
   int nextAddress = LAST_WAS_WIRTE;
 public:
-  i2cEEPROMClass(int busSpeed = 400000) ;
+  i2cEEPROMClass(uint32_t busSpeed = 400000) ;
   byte read(int address);
   void write(int address, byte data);
   void update(int address, byte data);

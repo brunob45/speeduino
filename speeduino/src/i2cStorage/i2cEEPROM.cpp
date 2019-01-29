@@ -3,7 +3,7 @@
 
 i2cEEPROMClass EEPROM;
 
-i2cEEPROMClass::i2cEEPROMClass(int busSpeed)
+i2cEEPROMClass::i2cEEPROMClass(uint32_t busSpeed)
 {
     Wire.begin();
     Wire.setClock(busSpeed);
@@ -16,8 +16,8 @@ byte i2cEEPROMClass::read(int address)
         if (nextAddress == LAST_WAS_WIRTE)
             busy_wait();
         Wire.beginTransmission(device_address);
-        Wire.send(address >> 8);
-        Wire.send(address & 0xff);
+        Wire.write(address >> 8);
+        Wire.write(address & 0xff);
         Wire.endTransmission(false);
     }
 
@@ -35,9 +35,9 @@ void i2cEEPROMClass::write(int address, byte data)
     if (nextAddress == LAST_WAS_WIRTE)
         busy_wait();
     Wire.beginTransmission(device_address);
-    Wire.send(address >> 8);
-    Wire.send(address & 0xff);
-    Wire.send(data);
+    Wire.write(address >> 8);
+    Wire.write(address & 0xff);
+    Wire.write(data);
     Wire.endTransmission(true);
     nextAddress = LAST_WAS_WIRTE;
 }
