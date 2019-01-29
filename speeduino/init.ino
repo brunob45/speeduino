@@ -19,7 +19,7 @@
 void initialiseAll()
 {
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
     table3D_setSize(&fuelTable, 16);
     table3D_setSize(&ignitionTable, 16);
     table3D_setSize(&afrTable, 16);
@@ -751,7 +751,7 @@ void initialiseAll()
 
 
     initialisationComplete = true;
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
 }
 
 void setPinMapping(byte boardID)
@@ -858,7 +858,7 @@ void setPinMapping(byte boardID)
       pinFlex = 2; // Flex sensor (Must be external interrupt enabled)
       pinResetControl = 50; //Reset control output
 
-      #if defined(CORE_TEENSY)
+      #if defined(__MK64FX512__)
         pinTrigger = 23;
         pinStepperDir = 33;
         pinStepperStep = 34;
@@ -908,7 +908,7 @@ void setPinMapping(byte boardID)
       pinFlex = 2; // Flex sensor (Must be external interrupt enabled)
       pinResetControl = 43; //Reset control output
 
-      #if defined(CORE_TEENSY)
+      #if defined(__MK64FX512__)
         pinInjector6 = 51;
 
         pinTrigger = 23;
@@ -1033,7 +1033,7 @@ void setPinMapping(byte boardID)
       pinFlex = 3; // Flex sensor (Must be external interrupt enabled)
       pinResetControl = 44; //Reset control output
 
-      #if defined(CORE_TEENSY)
+      #if defined(__MK64FX512__)
         pinTrigger = 23;
         pinTrigger2 = 36;
         pinStepperDir = 34;
@@ -1249,7 +1249,7 @@ void setPinMapping(byte boardID)
     #endif
       break;
 
-    #if defined(CORE_TEENSY)
+    #if defined(__MK64FX512__)
     case 50:
       //Pin mappings as per the teensy rev A shield
       pinInjector1 = 2; //Output pin injector 1 is on
@@ -1318,6 +1318,32 @@ void setPinMapping(byte boardID)
       pinSpareHOut1 = 8; // high current output spare1
       pinSpareHOut2 = 7; // high current output spare2
       pinSpareLOut1 = 21; //low current output spare1
+      break;
+    #endif
+
+    #if defined(__MK20DX256__) // teensy 3.2
+    case 51:
+      pinInjector1 = 9;
+      pinInjector2 = 8;
+      pinInjector3 = 7;
+      pinInjector4 = 6;
+      pinCoil1 = 5;
+      pinCoil2 = 4;
+      pinTrigger = 10;
+      pinTrigger2 = 11;
+      pinTPS = A0;
+      pinMAP = A1;
+      pinIAT = A2;
+      pinCLT = A3;
+      pinO2 = A14;
+      pinBat = A13;
+      pinFuelPump = 0;
+      pinIdle1 = 0;
+      pinSpareOut1 = 0;
+      pinSpareOut2 = 0;
+      pinBoost = 0;
+      pinFan = 0;
+      pinLaunch = 0;
       break;
     #endif
 

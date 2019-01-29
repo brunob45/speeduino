@@ -8,7 +8,9 @@ A full copy of the license may be found in the projects root directory
 #include "globals.h"
 #include "table.h"
 #include "comms.h"
-#if defined(CORE_SAMD21)
+#if defined(USE_I2C_EEPROM)
+  #include "src/i2cStorage/i2cEEPROM.h"
+#elif defined(CORE_SAMD21)
   #include "src/FlashStorage/FlashAsEEPROM.h"
 #else
   #include <EEPROM.h>

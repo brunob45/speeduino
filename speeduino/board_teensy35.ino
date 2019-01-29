@@ -129,6 +129,7 @@ void initBoard()
     FTM0_CNT = 0x0000; //Reset the count to zero
     FTM0_MOD = 0xFFFF; //max modulus = 65535
 
+#if defined(IRQ_FTM3)
     //FlexTimer 3 is used for schedules on channel 5+. Currently only channel 5 is used, but will likely be expanded later
     FTM3_MODE |= FTM_MODE_WPDIS; //Write Protection Disable
     FTM3_MODE |= FTM_MODE_FTMEN; //Flex Timer module enable
@@ -138,6 +139,7 @@ void initBoard()
     FTM3_CNTIN = 0x0000; //Shouldn't be needed, but just in case
     FTM3_CNT = 0x0000; //Reset the count to zero
     FTM3_MOD = 0xFFFF; //max modulus = 65535
+#endif
 
     /*
     * Enable the clock for FTM0/1
@@ -147,7 +149,9 @@ void initBoard()
     * 11 External clock
     */
     FTM0_SC |= FTM_SC_CLKS(0b1);
+#if defined(IRQ_FTM3)
     FTM3_SC |= FTM_SC_CLKS(0b1);
+#endif
 
     /*
     * Set Prescaler
@@ -165,7 +169,9 @@ void initBoard()
     * 111 Divide by 128
     */
     FTM0_SC |= FTM_SC_PS(0b111);
+#if defined(IRQ_FTM3)
     FTM3_SC |= FTM_SC_PS(0b111);
+#endif
 
     //Setup the channels (See Pg 1014 of K64 DS).
     //The are probably not needed as power on state should be 0
@@ -204,6 +210,7 @@ void initBoard()
     FTM0_C7SC |= FTM_CSC_MSA; //Enable Compare mode
     FTM0_C7SC |= FTM_CSC_CHIE; //Enable channel compare interrupt
 
+#if defined(IRQ_FTM3)
     //Do the same, but on flex timer 3 (Used for channels 5-8)
     FTM3_C0SC &= ~FTM_CSC_MSB; //According to Pg 965 of the K64 datasheet, this should not be needed as MSB is reset to 0 upon reset, but the channel interrupt fails to fire without it
     FTM3_C0SC |= FTM_CSC_MSA; //Enable Compare mode
@@ -236,10 +243,13 @@ void initBoard()
     FTM3_C7SC &= ~FTM_CSC_MSB; //According to Pg 965 of the K64 datasheet, this should not be needed as MSB is reset to 0 upon reset, but the channel interrupt fails to fire without it
     FTM3_C7SC |= FTM_CSC_MSA; //Enable Compare mode
     FTM3_C7SC |= FTM_CSC_CHIE; //Enable channel compare interrupt
+#endif
 
     // enable IRQ Interrupt
     NVIC_ENABLE_IRQ(IRQ_FTM0);
+#if defined(IRQ_FTM3)
     NVIC_ENABLE_IRQ(IRQ_FTM1);
+#endif
     
 }
 
