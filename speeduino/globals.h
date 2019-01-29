@@ -751,8 +751,8 @@ struct config9 {
   uint8_t Auxinpinb[16];            // digital pin number when internal aux in use
 
   byte iacStepperInv : 1;  //stepper direction of travel to allow reversing. 0=normal, 1=inverted.
-
-  byte unused10_153;
+  byte unused10_153:7;
+  
   byte unused10_154;
   byte unused10_155;
   byte unused10_156;
@@ -878,7 +878,7 @@ struct config10 {
   byte knock_recoveryStepTime;
   byte knock_recoveryStep;
 
-  byte unused11_122_191[69];
+  byte unused11_122_191[70];
 
 #if defined(CORE_AVR)
   };
@@ -968,5 +968,17 @@ volatile uint16_t ignitionCount; //The count of ignition events that have taken 
 extern byte cltCalibrationTable[CALIBRATION_TABLE_SIZE];
 extern byte iatCalibrationTable[CALIBRATION_TABLE_SIZE];
 extern byte o2CalibrationTable[CALIBRATION_TABLE_SIZE];
+
+// Check if config pages are the right size
+static_assert(sizeof(config2) >= 128, "config2 size is below 128");
+static_assert(sizeof(config2) <= 128, "config2 size is over 128");
+static_assert(sizeof(config4) >= 128, "config4 size is below 128");
+static_assert(sizeof(config4) <= 128, "config4 size is over 128");
+static_assert(sizeof(config6) >= 128, "config6 size is below 128");
+static_assert(sizeof(config6) <= 128, "config6 size is over 128");
+static_assert(sizeof(config9) >= 192, "config9 size is below 192");
+static_assert(sizeof(config9) <= 192, "config9 size is over 192");
+static_assert(sizeof(config10) >= 192, "config10 size is below 192");
+static_assert(sizeof(config10) <= 192, "config10 size is over 192");
 
 #endif // GLOBALS_H
