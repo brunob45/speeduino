@@ -614,19 +614,21 @@ This is separate from the config load as the calibrations do not exist as pages 
 */
 void loadCalibration()
 {
-
-  for(int x=0; x<CALIBRATION_TABLE_SIZE; x++) //Each calibration table is 512 bytes long
+  for(int x = 0; x < CALIBRATION_TABLE_SIZE; x++)
+  {
+    int y = EEPROM_CALIBRATION_O2 + x;
+    o2CalibrationTable[x] = EEPROM.read(y);
+  }
+  for(int x = 0; x < CALIBRATION_TABLE_SIZE; x++)
+  {
+    int y = EEPROM_CALIBRATION_IAT + x;
+    iatCalibrationTable[x] = EEPROM.read(y);
+  }
+  for(int x = 0; x < CALIBRATION_TABLE_SIZE; x++)
   {
     int y = EEPROM_CALIBRATION_CLT + x;
     cltCalibrationTable[x] = EEPROM.read(y);
-
-    y = EEPROM_CALIBRATION_IAT + x;
-    iatCalibrationTable[x] = EEPROM.read(y);
-
-    y = EEPROM_CALIBRATION_O2 + x;
-    o2CalibrationTable[x] = EEPROM.read(y);
   }
-
 }
 
 /*
