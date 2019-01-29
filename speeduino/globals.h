@@ -539,8 +539,13 @@ struct config2 {
   byte fanWhenOff : 1;      // Only run fan when engine is running
   byte fanUnused : 7;
 
-  byte unused1_70[57];
-
+  byte inj1OutputInverted:1;
+  byte inj2OutputInverted:1;
+  byte inj3OutputInverted:1;
+  byte inj4OutputInverted:1;
+  byte injOutput_unused:4;
+  
+  byte unused1_70[56];
 #if defined(CORE_AVR)
   };
 #else
