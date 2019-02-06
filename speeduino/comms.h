@@ -42,14 +42,14 @@ const char pageTitles[] PROGMEM //This is being stored in the avr flash instead 
    "\nPg 10 Config"
   };
 
-void command();//This is the heart of the Command Line Interpeter.  All that needed to be done was to make it human readable.
-void sendValues(uint16_t, uint16_t,byte, byte);
+void command(Stream&);//This is the heart of the Command Line Interpeter.  All that needed to be done was to make it human readable.
+void sendValues(uint16_t, uint16_t,byte, byte, Stream&);
 void receiveValue(int, byte);
-void saveConfig();
-void sendPage(bool);
-void receiveCalibration(byte);
-void sendToothLog(bool);
-void testComm();
+void saveConfig(Stream&);
+void sendPage(bool, Stream&);
+void receiveCalibration(byte, Stream&);
+void sendToothLog(bool, Stream&);
+void testComm(Stream&);
 void commandButtons();
 
 #endif // COMMS_H

@@ -57,13 +57,16 @@ void loop()
       //if ( (BIT_CHECK(TIMER_mask, BIT_TIMER_15HZ)) || (Serial.available() > SERIAL_BUFFER_THRESHOLD) )
       if ( ((mainLoopCount & 31) == 1) or (Serial.available() > SERIAL_BUFFER_THRESHOLD) )
       {
-        if (Serial.available() > 0) { command(); }
+        if (Serial.available() > 0) { command(Serial); }
         else if(cmdPending == true)
         {
           //This is a special case just for the tooth and composite loggers
-          if (currentCommand == 'T') { command(); }
+          if (currentCommand == 'T') { command(Serial); }
         }
-        
+      }
+      if ( ((mainLoopCount & 31) == 1) or (Serial1.available() > SERIAL_BUFFER_THRESHOLD) )
+      {
+        if (Serial1.available() > 0) { command(Serial1); }
       }
       //if can or secondary serial interface is enabled then check for requests.
       if (configPage9.enable_secondarySerial == 1)  //secondary serial interface enabled

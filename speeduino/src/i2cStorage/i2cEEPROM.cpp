@@ -1,7 +1,7 @@
 #include "i2cEEPROM.h"
 #include <Wire.h>
 
-i2cEEPROMClass EEPROM;
+i2cEEPROMClass EEPROM(1000000);
 
 i2cEEPROMClass::i2cEEPROMClass(uint32_t busSpeed)
 {

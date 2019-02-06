@@ -405,8 +405,8 @@ void loadConfig()
   byte* pnt_configPage;
 
   //Create local copy of EEPROM to improve loading time (by 28%)
-  uint8_t mem_config[EEPROM_CONFIG10_END];
-  for(int i = 0; i < EEPROM_CONFIG10_END; i++)
+  byte mem_config[EEPROM_CONFIG10_END];
+  for(int i = 3; i < EEPROM_CONFIG10_END; i++)
   {
     mem_config[i] = EEPROM.read(i);
   }

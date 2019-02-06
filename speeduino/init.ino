@@ -42,6 +42,7 @@ void initialiseAll()
     initialiseTimers();
 
     Serial.begin(115200);
+    Serial1.begin(57600);
     if (configPage9.enable_secondarySerial == 1) { CANSerial.begin(115200); }
  
     #if defined(CORE_STM32) || defined(CORE_TEENSY)
@@ -1323,27 +1324,27 @@ void setPinMapping(byte boardID)
 
     #if defined(__MK20DX256__) // teensy 3.2
     case 51:
-      pinInjector1 = 9;
-      pinInjector2 = 8;
-      pinInjector3 = 7;
-      pinInjector4 = 6;
-      pinCoil1 = 5;
-      pinCoil2 = 4;
-      pinTrigger = 10;
-      pinTrigger2 = 11;
-      pinTPS = A0;
-      pinMAP = A1;
-      pinIAT = A2;
-      pinCLT = A3;
-      pinO2 = A14;
-      pinBat = A13;
-      pinFuelPump = 0;
-      pinIdle1 = 0;
-      pinSpareOut1 = 0;
-      pinSpareOut2 = 0;
-      pinBoost = 0;
-      pinFan = 0;
-      pinLaunch = 0;
+      pinInjector1 = 12;
+      pinInjector2 = 11;
+      pinInjector3 = 2;
+      pinInjector4 = 5;
+      pinCoil1 = 23;
+      pinCoil2 = 22;
+      pinTrigger = 8;
+      pinTrigger2 = 9;
+      pinTPS = A2;
+      pinMAP = A0;
+      pinIAT = A1;
+      pinCLT = A14;
+      pinO2 = A11;
+      pinBat = A6;
+      pinFuelPump = 21;
+      pinIdle1 = 6;
+      pinSpareOut1 = UNUSED_DIGITAL_PIN;
+      pinSpareOut2 = UNUSED_DIGITAL_PIN;
+      pinBoost = UNUSED_DIGITAL_PIN;
+      pinFan = 10;
+      pinLaunch = UNUSED_DIGITAL_PIN;
       break;
     #endif
 

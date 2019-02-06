@@ -4,10 +4,10 @@
 #include <Arduino.h>
 class i2cEEPROMClass {
   const int LAST_WAS_WIRTE = -1;
-  const int device_address = 0b1010101;
+  const int device_address = 0b1010000;
   int nextAddress = LAST_WAS_WIRTE;
 public:
-  i2cEEPROMClass(uint32_t busSpeed = 400000) ;
+  i2cEEPROMClass(uint32_t busSpeed) ;
   byte read(int address);
   void write(int address, byte data);
   void update(int address, byte data);
