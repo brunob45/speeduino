@@ -510,8 +510,17 @@ static inline int8_t correctionCLTadvance(int8_t advance)
 static inline int8_t correctionSoftRevLimit(int8_t advance)
 {
   byte ignSoftRevValue = advance;
-  BIT_CLEAR(currentStatus.spark, BIT_SPARK_SFTLIM);
-  if (currentStatus.RPM > ((unsigned int)(configPage4.SoftRevLim) * 100) ) { BIT_SET(currentStatus.spark, BIT_SPARK_SFTLIM); ignSoftRevValue = configPage4.SoftLimRetard;  } //Softcut RPM limit (If we're above softcut limit, delay timing by configured number of degrees)
+
+  //Softcut RPM limit (If we're above softcut limit, delay timing by configured number of degrees)
+  if (configPage2.softLimiter && currentStatus.RPM > ((unsigned int)(configPage4.SoftRevLim) * 100) )
+  {
+    BIT_SET(currentStatus.spark, BIT_SPARK_SFTLIM);
+    ignSoftRevValue = configPage4.SoftLimRetard;
+  }
+  else
+  {
+    BIT_CLEAR(currentStatus.spark, BIT_SPARK_SFTLIM);
+  }
 
   return ignSoftRevValue;
 }

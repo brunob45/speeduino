@@ -788,8 +788,10 @@ void loop()
         }
       }
 
+      bool limiterFuelCut = (configPage2.fuelLimiter) && BIT_CHECK(currentStatus.spark, BIT_SPARK_HRDLIM);
+
 #if INJ_CHANNELS >= 1
-      if (fuelOn && !BIT_CHECK(currentStatus.status1, BIT_STATUS1_BOOSTCUT))
+      if (fuelOn && !BIT_CHECK(currentStatus.status1, BIT_STATUS1_BOOSTCUT) && !limiterFuelCut)
       {
         if(currentStatus.PW1 >= inj_opentime_uS)
         {
@@ -967,9 +969,11 @@ void loop()
       }
       else { fixedCrankingOverride = 0; }
 
+      bool limiterSparkCut = (configPage2.sparkLimiter) && BIT_CHECK(currentStatus.spark, BIT_SPARK_HRDLIM);
+
       //Perform an initial check to see if the ignition is turned on (Ignition only turns on after a preset number of cranking revolutions and:
       //Check for any of the hard cut rev limits being on
-      if(currentStatus.launchingHard || BIT_CHECK(currentStatus.spark, BIT_SPARK_BOOSTCUT) || BIT_CHECK(currentStatus.spark, BIT_SPARK_HRDLIM) || currentStatus.flatShiftingHard)
+      if(currentStatus.launchingHard || BIT_CHECK(currentStatus.spark, BIT_SPARK_BOOSTCUT) || limiterSparkCut || currentStatus.flatShiftingHard)
       {
         if(configPage2.hardCutType == HARD_CUT_FULL) { ignitionOn = false; }
         else 

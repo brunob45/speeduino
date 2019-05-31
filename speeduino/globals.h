@@ -584,7 +584,10 @@ struct config2 {
   uint16_t EMAPMax;
 
   byte fanWhenOff : 1;      // Only run fan when engine is running
-  byte fanUnused : 7;
+  byte fuelLimiter:1;
+  byte sparkLimiter:1;
+  byte softLimiter:1;
+  byte fanUnused : 4;
   byte asePct[4];  //Afterstart enrichment (%)
   byte aseCount[4]; //Afterstart enrichment cycles. This is the number of ignition cycles that the afterstart enrichment % lasts for
   byte aseBins[4]; //Afterstart enrichment temp axis
