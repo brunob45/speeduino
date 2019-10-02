@@ -143,6 +143,27 @@ uint16_t getRPM_ThirtySixMinus222();
 int getCrankAngle_ThirtySixMinus222();
 void triggerSetEndTeeth_ThirtySixMinus222();
 
+typedef void (*VoidFunction)(void);
+VoidFunction triggerSetup[] = {
+  triggerSetup_missingTooth,
+  triggerSetup_BasicDistributor,
+  triggerSetup_DualWheel,
+  triggerSetup_GM7X,
+  triggerSetup_4G63,
+  triggerSetup_24X,
+  triggerSetup_Jeep2000,
+  triggerSetup_Audi135,
+  triggerSetup_HondaD17,
+  triggerSetup_Miata9905,
+  triggerSetup_MazdaAU,
+  triggerSetup_non360,
+  triggerSetup_Nissan360,
+  triggerSetup_Subaru67,
+  triggerSetup_Daihatsu,
+  triggerSetup_Harley,
+  triggerSetup_ThirtySixMinus222,
+};
+
 unsigned long MAX_STALL_TIME = 500000UL; //The maximum time (in uS) that the system will continue to function before the engine is considered stalled/stopped. This is unique to each decoder, depending on the number of teeth etc. 500000 (half a second) is used as the default value, most decoders will be much less.
 
 volatile unsigned long curTime;

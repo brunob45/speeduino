@@ -245,6 +245,13 @@ Note: This does not currently support dual wheel (ie missing tooth + single toot
 */
 void triggerSetup_missingTooth()
 {
+      triggerHandler = triggerPri_missingTooth;
+      triggerSecondaryHandler = triggerSec_missingTooth;
+      decoderHasSecondary = true;
+      getRPM = getRPM_missingTooth;
+      getCrankAngle = getCrankAngle_missingTooth;
+      triggerSetEndTeeth = triggerSetEndTeeth_missingTooth;
+
   triggerToothAngle = 360 / configPage4.triggerTeeth; //The number of degrees that passes from tooth to tooth
   if(configPage4.TrigSpeed == CAM_SPEED) { triggerToothAngle = 720 / configPage4.triggerTeeth; } //Account for cam speed missing tooth
   triggerActualTeeth = configPage4.triggerTeeth - configPage4.triggerMissingTeeth; //The number of physical teeth on the wheel. Doing this here saves us a calculation each time in the interrupt
@@ -478,6 +485,13 @@ Note: There can be no missing teeth on the primary wheel
 */
 void triggerSetup_DualWheel()
 {
+      triggerHandler = triggerPri_DualWheel;
+      triggerSecondaryHandler = triggerSec_DualWheel;
+      decoderHasSecondary = true;
+      getRPM = getRPM_DualWheel;
+      getCrankAngle = getCrankAngle_DualWheel;
+      triggerSetEndTeeth = triggerSetEndTeeth_DualWheel;
+
   triggerToothAngle = 360 / configPage4.triggerTeeth; //The number of degrees that passes from tooth to tooth
   if(configPage4.TrigSpeed == 1) { triggerToothAngle = 720 / configPage4.triggerTeeth; } //Account for cam speed missing tooth
   toothCurrentCount = 255; //Default value
@@ -638,6 +652,11 @@ Note: This is a very simple decoder. See www.megamanual.com/ms2/GM_7pinHEI.htm
 */
 void triggerSetup_BasicDistributor()
 {
+      triggerHandler = triggerPri_BasicDistributor;
+      getRPM = getRPM_BasicDistributor;
+      getCrankAngle = getCrankAngle_BasicDistributor;
+      triggerSetEndTeeth = triggerSetEndTeeth_BasicDistributor;
+
   triggerActualTeeth = configPage2.nCylinders;
   if(triggerActualTeeth == 0) { triggerActualTeeth = 1; }
   triggerToothAngle = 720 / triggerActualTeeth; //The number of degrees that passes from tooth to tooth
@@ -783,6 +802,11 @@ www.speeduino.com/forum/download/file.php?id=4743
 */
 void triggerSetup_GM7X()
 {
+      triggerHandler = triggerPri_GM7X;
+      getRPM = getRPM_GM7X;
+      getCrankAngle = getCrankAngle_GM7X;
+      triggerSetEndTeeth = triggerSetEndTeeth_GM7X;
+
   triggerToothAngle = 360 / 6; //The number of degrees that passes from tooth to tooth
   secondDerivEnabled = false;
   decoderIsSequential = false;
@@ -920,6 +944,17 @@ Tooth number one is at 355* ATDC
 */
 void triggerSetup_4G63()
 {
+      triggerHandler = triggerPri_4G63;
+      triggerSecondaryHandler = triggerSec_4G63;
+      decoderHasSecondary = true;
+      getRPM = getRPM_4G63;
+      getCrankAngle = getCrankAngle_4G63;
+      triggerSetEndTeeth = triggerSetEndTeeth_4G63;
+
+      // Override default trigger edge
+      primaryTriggerEdge = CHANGE;
+      secondaryTriggerEdge = FALLING;
+
   triggerToothAngle = 180; //The number of degrees that passes from tooth to tooth (primary)
   toothCurrentCount = 99; //Fake tooth count represents no sync
   secondDerivEnabled = false;
@@ -1355,6 +1390,16 @@ Provided that the cam signal is used, this decoder simply counts the teeth and t
 */
 void triggerSetup_24X()
 {
+      triggerHandler = triggerPri_24X;
+      triggerSecondaryHandler = triggerSec_24X;
+      decoderHasSecondary = true;
+      getRPM = getRPM_24X;
+      getCrankAngle = getCrankAngle_24X;
+      triggerSetEndTeeth = triggerSetEndTeeth_24X;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = CHANGE; //Secondary is always on every change
+
   triggerToothAngle = 15; //The number of degrees that passes from tooth to tooth (primary)
   toothAngles[0] = 12;
   toothAngles[1] = 18;
@@ -1477,6 +1522,16 @@ www.speeduino.com/forum/download/file.php?id=205
 */
 void triggerSetup_Jeep2000()
 {
+      triggerHandler = triggerPri_Jeep2000;
+      triggerSecondaryHandler = triggerSec_Jeep2000;
+      decoderHasSecondary = true;
+      getRPM = getRPM_Jeep2000;
+      getCrankAngle = getCrankAngle_Jeep2000;
+      triggerSetEndTeeth = triggerSetEndTeeth_Jeep2000;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = CHANGE;
+
   triggerToothAngle = 0; //The number of degrees that passes from tooth to tooth (primary)
   toothAngles[0] = 174;
   toothAngles[1] = 194;
@@ -1581,6 +1636,16 @@ Note: This is very similar to the dual wheel decoder, however due to the 135 tee
 */
 void triggerSetup_Audi135()
 {
+      triggerHandler = triggerPri_Audi135;
+      triggerSecondaryHandler = triggerSec_Audi135;
+      decoderHasSecondary = true;
+      getRPM = getRPM_Audi135;
+      getCrankAngle = getCrankAngle_Audi135;
+      triggerSetEndTeeth = triggerSetEndTeeth_Audi135;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = RISING; //always rising for this trigger
+
   triggerToothAngle = 8; //135/3 = 45, 360/45 = 8 degrees every 3 teeth
   toothCurrentCount = 255; //Default value
   toothSystemCount = 0;
@@ -1700,6 +1765,16 @@ Note:
 */
 void triggerSetup_HondaD17()
 {
+      triggerHandler = triggerPri_HondaD17;
+      triggerSecondaryHandler = triggerSec_HondaD17;
+      decoderHasSecondary = true;
+      getRPM = getRPM_HondaD17;
+      getCrankAngle = getCrankAngle_HondaD17;
+      triggerSetEndTeeth = triggerSetEndTeeth_HondaD17;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = CHANGE;
+
   triggerToothAngle = 360 / 12; //The number of degrees that passes from tooth to tooth
   MAX_STALL_TIME = (3333UL * triggerToothAngle); //Minimum 50rpm. (3333uS is the time per degree at 50rpm)
   secondDerivEnabled = false;
@@ -1800,6 +1875,13 @@ Tooth number one is at 355* ATDC
 */
 void triggerSetup_Miata9905()
 {
+      triggerHandler = triggerPri_Miata9905;
+      triggerSecondaryHandler = triggerSec_Miata9905;
+      decoderHasSecondary = true;
+      getRPM = getRPM_Miata9905;
+      getCrankAngle = getCrankAngle_Miata9905;
+      triggerSetEndTeeth = triggerSetEndTeeth_Miata9905;
+
   triggerToothAngle = 90; //The number of degrees that passes from tooth to tooth (primary)
   toothCurrentCount = 99; //Fake tooth count represents no sync
   secondDerivEnabled = false;
@@ -2071,6 +2153,16 @@ Tooth number one is at 348* ATDC
 */
 void triggerSetup_MazdaAU()
 {
+      triggerHandler = triggerPri_MazdaAU;
+      triggerSecondaryHandler = triggerSec_MazdaAU;
+      decoderHasSecondary = true;
+      getRPM = getRPM_MazdaAU;
+      getCrankAngle = getCrankAngle_MazdaAU;
+      triggerSetEndTeeth = triggerSetEndTeeth_MazdaAU;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = FALLING;
+
   triggerToothAngle = 108; //The number of degrees that passes from tooth to tooth (primary). This is the maximum gap
   toothCurrentCount = 99; //Fake tooth count represents no sync
   secondaryToothCount = 0; //Needed for the cam tooth tracking
@@ -2221,6 +2313,16 @@ Note: There can be no missing teeth on the primary wheel
 */
 void triggerSetup_non360()
 {
+      triggerHandler = triggerPri_DualWheel; //Is identical to the dual wheel decoder, so that is used. Same goes for the secondary below
+      triggerSecondaryHandler = triggerSec_DualWheel; //Note the use of the Dual Wheel trigger function here. No point in having the same code in twice.
+      decoderHasSecondary = true;
+      getRPM = getRPM_non360;
+      getCrankAngle = getCrankAngle_non360;
+      triggerSetEndTeeth = triggerSetEndTeeth_non360;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = FALLING;
+
   triggerToothAngle = (360 * configPage4.TrigAngMul) / configPage4.triggerTeeth; //The number of degrees that passes from tooth to tooth multiplied by the additional multiplier
   toothCurrentCount = 255; //Default value
   triggerFilterTime = (int)(1000000 / (MAX_RPM / 60 * configPage4.triggerTeeth)); //Trigger filter time is the shortest possible time (in uS) that there can be between crank teeth (ie at max RPM). Any pulses that occur faster than this time will be disgarded as noise
@@ -2294,6 +2396,16 @@ Note: wiki.r31skylineclub.com/index.php/Crank_Angle_Sensor
 */
 void triggerSetup_Nissan360()
 {
+      triggerHandler = triggerPri_Nissan360;
+      triggerSecondaryHandler = triggerSec_Nissan360;
+      decoderHasSecondary = true;
+      getRPM = getRPM_Nissan360;
+      getCrankAngle = getCrankAngle_Nissan360;
+      triggerSetEndTeeth = triggerSetEndTeeth_Nissan360;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = CHANGE;
+
   triggerFilterTime = (1000000 / (MAX_RPM / 60 * 360UL)); //Trigger filter time is the shortest possible time (in uS) that there can be between crank teeth (ie at max RPM). Any pulses that occur faster than this time will be disgarded as noise
   triggerSecFilterTime = (int)(1000000 / (MAX_RPM / 60 * 2)) / 2; //Same as above, but fixed at 2 teeth on the secondary input and divided by 2 (for cam speed)
   secondaryToothCount = 0; //Initially set to 0 prior to calculating the secondary window duration
@@ -2522,6 +2634,16 @@ Note:
 */
 void triggerSetup_Subaru67()
 {
+      triggerHandler = triggerPri_Subaru67;
+      triggerSecondaryHandler = triggerSec_Subaru67;
+      decoderHasSecondary = true;
+      getRPM = getRPM_Subaru67;
+      getCrankAngle = getCrankAngle_Subaru67;
+      triggerSetEndTeeth = triggerSetEndTeeth_Subaru67;
+
+      // Override default trigger edge
+      secondaryTriggerEdge = FALLING;
+
   triggerFilterTime = (1000000 / (MAX_RPM / 60 * 360UL)); //Trigger filter time is the shortest possible time (in uS) that there can be between crank teeth (ie at max RPM). Any pulses that occur faster than this time will be disgarded as noise
   triggerSecFilterTime = 0;
   secondaryToothCount = 0; //Initially set to 0 prior to calculating the secondary window duration
@@ -2771,6 +2893,11 @@ Note: This is a very simple decoder. See www.megamanual.com/ms2/GM_7pinHEI.htm
 */
 void triggerSetup_Daihatsu()
 {
+      triggerHandler = triggerPri_Daihatsu;
+      getRPM = getRPM_Daihatsu;
+      getCrankAngle = getCrankAngle_Daihatsu;
+      triggerSetEndTeeth = triggerSetEndTeeth_Daihatsu;
+
   triggerActualTeeth = configPage2.nCylinders + 1;
   triggerToothAngle = 720 / triggerActualTeeth; //The number of degrees that passes from tooth to tooth
   triggerFilterTime = 60000000L / MAX_RPM / configPage2.nCylinders; // Minimum time required between teeth
@@ -2936,6 +3063,15 @@ Code for decoder.ino
 */
 void triggerSetup_Harley()
 {
+      triggerHandler = triggerPri_Harley;
+      //triggerSecondaryHandler = triggerSec_Harley;
+      getRPM = getRPM_Harley;
+      getCrankAngle = getCrankAngle_Harley;
+      triggerSetEndTeeth = triggerSetEndTeeth_Harley;
+
+      // Override default trigger edge
+      primaryTriggerEdge = RISING; //Always rising
+
   triggerToothAngle = 0; // The number of degrees that passes from tooth to tooth, ev. 0. It alternates uneven
   secondDerivEnabled = false;
   decoderIsSequential = false;
@@ -3074,6 +3210,13 @@ Note: www.thefactoryfiveforum.com/attachment.php?attachmentid=34279&d=1412431418
 */
 void triggerSetup_ThirtySixMinus222()
 {
+      triggerHandler = triggerPri_ThirtySixMinus222;
+      triggerSecondaryHandler = triggerSec_ThirtySixMinus222;
+      decoderHasSecondary = true;
+      getRPM = getRPM_missingTooth; //This uses the same function as the missing tooth decoder, so no need to duplicate code
+      getCrankAngle = getCrankAngle_missingTooth; //This uses the same function as the missing tooth decoder, so no need to duplicate code
+      triggerSetEndTeeth = triggerSetEndTeeth_ThirtySixMinus222;
+
   triggerToothAngle = 10; //The number of degrees that passes from tooth to tooth
   triggerActualTeeth = 30; //The number of physical teeth on the wheel. Doing this here saves us a calculation each time in the interrupt
   triggerFilterTime = (int)(1000000 / (MAX_RPM / 60 * configPage4.triggerTeeth)); //Trigger filter time is the shortest possible time (in uS) that there can be between crank teeth (ie at max RPM). Any pulses that occur faster than this time will be disgarded as noise
