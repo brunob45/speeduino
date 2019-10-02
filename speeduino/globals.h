@@ -22,9 +22,17 @@
   #elif defined(__IMXRT1062__)
     #define CORE_TEENSY40
     #define BOARD_H "board_teensy40.h"
+  #elif defined(__MK20DX256__)
+    #define CORE_TEENSY32
+    #define BOARD_H "board_teensy32.h"
   #endif
-  #define INJ_CHANNELS 8
-  #define IGN_CHANNELS 8
+  #if defined(CORE_TEENSY32)
+    #define INJ_CHANNELS 4
+    #define IGN_CHANNELS 4
+  #else
+    #define INJ_CHANNELS 8
+    #define IGN_CHANNELS 8
+  #endif
 
 #elif defined(STM32_MCU_SERIES) || defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__) || defined(STM32F4) || defined(STM32)
   //These should be updated to 8 later, but there's bits missing currently
@@ -90,6 +98,13 @@
 
 #define MS_IN_MINUTE 60000
 #define US_IN_MINUTE 60000000
+
+#ifndef UNUSED_DIGITAL_PIN
+#define UNUSED_DIGITAL_PIN 0
+#endif
+#ifndef UNUSED_ANALOG_PIN
+#define UNUSED_ANALOG_PIN 0
+#endif
 
 //Define the load algorithm
 #define LOAD_SOURCE_MAP         0
@@ -599,8 +614,10 @@ struct config2 {
   byte aseBins[4]; //Afterstart enrichment temp axis
   byte primePulse[4]; //Priming pulsewidth
   byte primeBins[4]; //Priming temp axis
-  byte unused2_91[37];
+  byte unused2_91[36];
 
+  byte RevLimiterMode:2;
+  byte unused2_127:6;
 #if defined(CORE_AVR)
   };
 #else
@@ -1045,6 +1062,7 @@ byte pinIgnBypass; //The pin used for an ignition bypass (Optional)
 byte pinFlex; //Pin with the flex sensor attached
 byte pinBaro; //Pin that an external barometric pressure sensor is attached to (If used)
 byte pinResetControl; // Output pin used control resetting the Arduino
+byte pinEngineCheck = UNUSED_DIGITAL_PIN;
 
 /* global variables */ // from speeduino.ino
 extern struct statuses currentStatus; // from speeduino.ino

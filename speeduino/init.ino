@@ -19,7 +19,7 @@
 void initialiseAll()
 {
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
     table3D_setSize(&fuelTable, 16);
     table3D_setSize(&fuelTable2, 16);
     table3D_setSize(&ignitionTable, 16);
@@ -43,6 +43,7 @@ void initialiseAll()
     initialiseTimers();
 
     Serial.begin(115200);
+    Serial1.begin(57600);
     if (configPage9.enable_secondarySerial == 1) { CANSerial.begin(115200); }
 
     #if defined(CORE_STM32) || defined(CORE_TEENSY)
@@ -870,11 +871,33 @@ void initialiseAll()
 
 
     initialisationComplete = true;
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
 }
 
 void setPinMapping(byte boardID)
 {
+  #if defined(CORE_TEENSY32)
+    pinInjector1 = 12;
+    pinInjector2 = 11;
+    pinInjector3 = 22;
+    pinInjector4 = 23;
+    pinCoil1 = 5;
+    pinCoil2 = 6;
+    pinTrigger = 8;
+    pinTrigger2 = 9;
+    pinTPS = A2;
+    pinMAP = A0;
+    pinIAT = A1;
+    pinCLT = A14;
+    pinO2 = A10;
+    pinBat = A3;
+    pinFuelPump = 21;
+    pinIdle1 = 2;
+    pinFan = 10;
+    pinLaunch = 20;
+    // pinOilP = A11;
+    pinEngineCheck = 7;
+  #else
   switch (boardID)
   {
     case 0:
@@ -1945,6 +1968,7 @@ void setPinMapping(byte boardID)
       #endif  
       break;
   }
+  #endif
 
   //Setup any devices that are using selectable pins
 
@@ -1995,6 +2019,7 @@ void setPinMapping(byte boardID)
   pinMode(pinStepperEnable, OUTPUT);
   pinMode(pinBoost, OUTPUT);
   pinMode(pinVVT_1, OUTPUT);
+  pinMode(pinEngineCheck, OUTPUT);
 
   //This is a legacy mode option to revert the MAP reading behaviour to match what was in place prior to the 201905 firmware
   if(configPage2.legacyMAP > 0) { digitalWrite(pinMAP, HIGH); }
@@ -2240,7 +2265,7 @@ void initialiseTriggers()
       triggerSetEndTeeth = triggerSetEndTeeth_4G63;
 
       primaryTriggerEdge = CHANGE;
-      secondaryTriggerEdge = FALLING;
+      secondaryTriggerEdge = RISING;
 
       attachInterrupt(triggerInterrupt, triggerHandler, primaryTriggerEdge);
       attachInterrupt(triggerInterrupt2, triggerSecondaryHandler, secondaryTriggerEdge);

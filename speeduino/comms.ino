@@ -19,9 +19,10 @@ A full copy of the license may be found in the projects root directory
     * cmdPending = If a command has started but is wairing on further data to complete
     * chunkPending = Specifically for the new receive value method where TS will send a known number of contiguous bytes to be written to a table
 */
-void command()
+
+void command(Stream& mySerial)
 {
-  if (cmdPending == false) { currentCommand = Serial.read(); }
+  if (cmdPending == false) { currentCommand = mySerial.read(); }
 
   switch (currentCommand)
   {
@@ -29,17 +30,17 @@ void command()
     case 'a':
       cmdPending = true;
 
-      if (Serial.available() >= 2)
+      if (mySerial.available() >= 2)
       {
-        Serial.read(); //Ignore the first value, it's always 0
-        Serial.read(); //Ignore the second value, it's always 6
-        sendValuesLegacy();
+        mySerial.read(); //Ignore the first table value, it's always 0
+        mySerial.read(); //Ignore the second table value, it's always 6
+        sendValuesLegacy(mySerial);
         cmdPending = false;
       }
       break;
 
     case 'A': // send x bytes of realtime values
-      sendValues(0, SERIAL_PACKET_SIZE, 0x30, 0);   //send values to serial0
+      sendValues(0, SERIAL_PACKET_SIZE, 0x30, 0, mySerial);   //send values to serial0
       break;
 
 
@@ -50,36 +51,36 @@ void command()
     case 'b': // New EEPROM burn command to only burn a single page at a time
       cmdPending = true;
 
-      if (Serial.available() >= 2)
+      if (mySerial.available() >= 2)
       {
-        Serial.read(); //Ignore the first table value, it's always 0
-        writeConfig(Serial.read());
+        mySerial.read(); //Ignore the first table value, it's always 0
+        writeConfig(mySerial.read());
         cmdPending = false;
       }
       break;
 
     case 'C': // test communications. This is used by Tunerstudio to see whether there is an ECU on a given serial port
-      testComm();
+      testComm(mySerial);
       break;
 
     case 'c': //Send the current loops/sec value
-      Serial.write(lowByte(currentStatus.loopsPerSecond));
-      Serial.write(highByte(currentStatus.loopsPerSecond));
+      mySerial.write(lowByte(currentStatus.loopsPerSecond));
+      mySerial.write(highByte(currentStatus.loopsPerSecond));
       break;
 
     case 'd': // Send a CRC32 hash of a given page
       cmdPending = true;
 
-      if (Serial.available() >= 2)
+      if (mySerial.available() >= 2)
       {
-        Serial.read(); //Ignore the first byte value, it's always 0
-        uint32_t CRC32_val = calculateCRC32( Serial.read() );
+        mySerial.read(); //Ignore the first byte value, it's always 0
+        uint32_t CRC32_val = calculateCRC32( mySerial.read() );
         
         //Split the 4 bytes of the CRC32 value into individual bytes and send
-        Serial.write( ((CRC32_val >> 24) & 255) );
-        Serial.write( ((CRC32_val >> 16) & 255) );
-        Serial.write( ((CRC32_val >> 8) & 255) );
-        Serial.write( (CRC32_val & 255) );
+        mySerial.write( ((CRC32_val >> 24) & 255) );
+        mySerial.write( ((CRC32_val >> 16) & 255) );
+        mySerial.write( ((CRC32_val >> 8) & 255) );
+        mySerial.write( (CRC32_val & 255) );
         
         cmdPending = false;
       }
@@ -90,11 +91,9 @@ void command()
     case 'E': // receive command button commands
       cmdPending = true;
 
-      if(Serial.available() >= 2)
+      if(mySerial.available() >= 2)
       {
-        byte cmdGroup = Serial.read();
-        byte cmdValue = Serial.read();
-        int cmdCombined = word(cmdGroup, cmdValue);
+        int cmdCombined = word(mySerial.read(), mySerial.read());
         if (currentStatus.RPM == 0) { commandButtons(cmdCombined); }
 
         cmdPending = false;
@@ -102,7 +101,7 @@ void command()
       break;
 
     case 'F': // send serial protocol version
-      Serial.print(F("001"));
+      mySerial.print(F("001"));
       break;
 
     case 'H': //Start the tooth logger
@@ -118,7 +117,7 @@ void command()
       detachInterrupt( digitalPinToInterrupt(pinTrigger2) );
       attachInterrupt( digitalPinToInterrupt(pinTrigger2), loggerSecondaryISR, CHANGE );
 
-      Serial.write(1); //TS needs an acknowledgement that this was received. I don't know if this is the correct response, but it seems to work
+      mySerial.write(1); //TS needs an acknowledgement that this was received. I don't know if this is the correct response, but it seems to work
       break;
 
     case 'h': //Stop the tooth logger
@@ -146,7 +145,7 @@ void command()
       detachInterrupt( digitalPinToInterrupt(pinTrigger2) );
       attachInterrupt( digitalPinToInterrupt(pinTrigger2), loggerSecondaryISR, CHANGE );
 
-      Serial.write(1); //TS needs an acknowledgement that this was received. I don't know if this is the correct response, but it seems to work
+      mySerial.write(1); //TS needs an acknowledgement that this was received. I don't know if this is the correct response, but it seems to work
       break;
 
     case 'j': //Stop the composite logger
@@ -161,17 +160,17 @@ void command()
       break;
 
     case 'L': // List the contents of current page in human readable form
-      sendPageASCII();
+      sendPageASCII(mySerial);
       break;
 
     case 'm': //Send the current free memory
       currentStatus.freeRAM = freeRam();
-      Serial.write(lowByte(currentStatus.freeRAM));
-      Serial.write(highByte(currentStatus.freeRAM));
+      mySerial.write(lowByte(currentStatus.freeRAM));
+      mySerial.write(highByte(currentStatus.freeRAM));
       break;
 
     case 'N': // Displays a new line.  Like pushing enter in a text editor
-      Serial.println();
+      mySerial.println();
       break;
 
     case 'P': // set the current page
@@ -179,9 +178,9 @@ void command()
       //A 2nd byte of data is required after the 'P' specifying the new page number.
       cmdPending = true;
 
-      if (Serial.available() > 0)
+      if (mySerial.available() > 0)
       {
-        currentPage = Serial.read();
+        currentPage = mySerial.read();
         //This converts the ascii number char into binary. Note that this will break everyything if there are ever more than 48 pages (48 = asci code for '0')
         if ((currentPage >= '0') && (currentPage <= '9')) // 0 - 9
         {
@@ -213,24 +212,24 @@ void command()
       //2 - Page identifier
       //2 - offset
       //2 - Length
-      if(Serial.available() >= 6)
+      if(mySerial.available() >= 6)
       {
         byte offset1, offset2, length1, length2;
         int length;
         byte tempPage;
 
-        Serial.read(); // First byte of the page identifier can be ignored. It's always 0
-        tempPage = Serial.read();
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+        tempPage = mySerial.read();
         //currentPage = 1;
-        offset1 = Serial.read();
-        offset2 = Serial.read();
+        offset1 = mySerial.read();
+        offset2 = mySerial.read();
         valueOffset = word(offset2, offset1);
-        length1 = Serial.read();
-        length2 = Serial.read();
+        length1 = mySerial.read();
+        length2 = mySerial.read();
         length = word(length2, length1);
         for(int i = 0; i < length; i++)
         {
-          Serial.write( getPageValue(tempPage, valueOffset + i) );
+          mySerial.write( getPageValue(tempPage, valueOffset + i) );
         }
 
         cmdPending = false;
@@ -238,26 +237,26 @@ void command()
       break;
 
     case 'Q': // send code version
-      Serial.print(F("speeduino 201910-dev"));
+      mySerial.print(F("speeduino 201910-dev"));
       break;
 
     case 'r': //New format for the optimised OutputChannels
       cmdPending = true;
       byte cmd;
-      if (Serial.available() >= 6)
+      if (mySerial.available() >= 6)
       {
-        tsCanId = Serial.read(); //Read the $tsCanId
-        cmd = Serial.read(); // read the command
+        tsCanId = mySerial.read(); //Read the $tsCanId
+        cmd = mySerial.read(); // read the command
 
         uint16_t offset, length;
         if(cmd == 0x30) //Send output channels command 0x30 is 48dec
         {
           byte tmp;
-          tmp = Serial.read();
-          offset = word(Serial.read(), tmp);
-          tmp = Serial.read();
-          length = word(Serial.read(), tmp);
-          sendValues(offset, length,cmd, 0);
+          tmp = mySerial.read();
+          offset = word(mySerial.read(), tmp);
+          tmp = mySerial.read();
+          length = word(mySerial.read(), tmp);
+          sendValues(offset, length,cmd, 0, mySerial);
         }
         else
         {
@@ -268,13 +267,13 @@ void command()
       break;
 
     case 'S': // send code version
-      Serial.print(F("Speeduino 2019.10-dev"));
+      mySerial.print(F("Speeduino 2019.10-dev"));
       currentStatus.secl = 0; //This is required in TS3 due to its stricter timings
       break;
 
     case 'T': //Send 256 tooth log entries to Tuner Studios tooth logger
-      if(currentStatus.toothLogEnabled == true) { sendToothLog(); } //Sends tooth log values as ints
-      else if (currentStatus.compositeLogEnabled == true) { sendCompositeLog(); }
+      if(currentStatus.toothLogEnabled == true) { sendToothLog(mySerial); } //Sends tooth log values as ints
+      else if (currentStatus.compositeLogEnabled == true) { sendCompositeLog(mySerial); }
 
       break;
 
@@ -283,10 +282,10 @@ void command()
       //byte canID;
 
       //The first 2 bytes sent represent the canID and tableID
-      while (Serial.available() == 0) { }
-      tableID = Serial.read(); //Not currently used for anything
+      while (mySerial.available() == 0) { }
+      tableID = mySerial.read(); //Not currently used for anything
 
-      receiveCalibration(tableID); //Receive new values and store in memory
+      receiveCalibration(tableID, mySerial); //Receive new values and store in memory
       writeCalibration(); //Store received values in EEPROM
 
       break;
@@ -295,22 +294,22 @@ void command()
       if (resetControl != RESET_CONTROL_DISABLED)
       {
       #ifndef SMALL_FLASH_MODE
-        if (!cmdPending) { Serial.println(F("Comms halted. Next byte will reset the Arduino.")); }
+        if (!cmdPending) { mySerial.println(F("Comms halted. Next byte will reset the Arduino.")); }
       #endif
 
-        while (Serial.available() == 0) { }
+        while (mySerial.available() == 0) { }
         digitalWrite(pinResetControl, LOW);
       }
       else
       {
       #ifndef SMALL_FLASH_MODE
-        if (!cmdPending) { Serial.println(F("Reset control is currently disabled.")); }
+        if (!cmdPending) { mySerial.println(F("Reset control is currently disabled.")); }
       #endif
       }
       break;
 
     case 'V': // send VE table and constants in binary
-      sendPage();
+      sendPage(mySerial);
       break;
 
     case 'W': // receive new VE obr constant at 'W'+<offset>+<newbyte>
@@ -318,22 +317,22 @@ void command()
 
       if (isMap)
       {
-        if(Serial.available() >= 3) // 1 additional byte is required on the MAP pages which are larger than 255 bytes
+        if(mySerial.available() >= 3) // 1 additional byte is required on the MAP pages which are larger than 255 bytes
         {
           byte offset1, offset2;
-          offset1 = Serial.read();
-          offset2 = Serial.read();
+          offset1 = mySerial.read();
+          offset2 = mySerial.read();
           valueOffset = word(offset2, offset1);
-          receiveValue(valueOffset, Serial.read());
+          receiveValue(valueOffset, mySerial.read());
           cmdPending = false;
         }
       }
       else
       {
-        if(Serial.available() >= 2)
+        if(mySerial.available() >= 2)
         {
-          valueOffset = Serial.read();
-          receiveValue(valueOffset, Serial.read());
+          valueOffset = mySerial.read();
+          receiveValue(valueOffset, mySerial.read());
           cmdPending = false;
         }
       }
@@ -351,18 +350,18 @@ void command()
         //2 - offset
         //2 - Length
         //1 - 1st New value
-        if(Serial.available() >= 7)
+        if(mySerial.available() >= 7)
         {
           byte offset1, offset2, length1, length2;
 
-          Serial.read(); // First byte of the page identifier can be ignored. It's always 0
-          currentPage = Serial.read();
+          mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+          currentPage = mySerial.read();
           //currentPage = 1;
-          offset1 = Serial.read();
-          offset2 = Serial.read();
+          offset1 = mySerial.read();
+          offset2 = mySerial.read();
           valueOffset = word(offset2, offset1);
-          length1 = Serial.read(); // Length to be written (Should always be 1)
-          length2 = Serial.read(); // Length to be written (Should always be 1)
+          length1 = mySerial.read(); // Length to be written (Should always be 1)
+          length2 = mySerial.read(); // Length to be written (Should always be 1)
           chunkSize = word(length2, length1);
 
           chunkPending = true;
@@ -372,9 +371,9 @@ void command()
       //This CANNOT be an else of the above if statement as chunkPending gets set to true above
       if(chunkPending == true)
       {
-        while( (Serial.available() > 0) && (chunkComplete < chunkSize) )
+        while( (mySerial.available() > 0) && (chunkComplete < chunkSize) )
         {
-          receiveValue( (valueOffset + chunkComplete), Serial.read());
+          receiveValue( (valueOffset + chunkComplete), mySerial.read());
           chunkComplete++;
         }
         if(chunkComplete >= chunkSize) { cmdPending = false; chunkPending = false; }
@@ -383,47 +382,47 @@ void command()
 
     case 'Z': //Totally non-standard testing function. Will be removed once calibration testing is completed. This function takes 1.5kb of program space! :S
     #ifndef SMALL_FLASH_MODE
-      Serial.println(F("Coolant"));
+      mySerial.println(F("Coolant"));
       for (int x = 0; x < CALIBRATION_TABLE_SIZE; x++)
       {
-        Serial.print(x);
-        Serial.print(", ");
-        Serial.println(cltCalibrationTable[x]);
+        mySerial.print(x);
+        mySerial.print(", ");
+        mySerial.println(cltCalibrationTable[x]);
       }
-      Serial.println(F("Inlet temp"));
+      mySerial.println(F("Inlet temp"));
       for (int x = 0; x < CALIBRATION_TABLE_SIZE; x++)
       {
-        Serial.print(x);
-        Serial.print(", ");
-        Serial.println(iatCalibrationTable[x]);
+        mySerial.print(x);
+        mySerial.print(", ");
+        mySerial.println(iatCalibrationTable[x]);
       }
-      Serial.println(F("O2"));
+      mySerial.println(F("O2"));
       for (int x = 0; x < CALIBRATION_TABLE_SIZE; x++)
       {
-        Serial.print(x);
-        Serial.print(", ");
-        Serial.println(o2CalibrationTable[x]);
+        mySerial.print(x);
+        mySerial.print(", ");
+        mySerial.println(o2CalibrationTable[x]);
       }
-      Serial.println(F("WUE"));
+      mySerial.println(F("WUE"));
       for (int x = 0; x < 10; x++)
       {
-        Serial.print(configPage4.wueBins[x]);
-        Serial.print(F(", "));
-        Serial.println(configPage2.wueValues[x]);
+        mySerial.print(configPage4.wueBins[x]);
+        mySerial.print(F(", "));
+        mySerial.println(configPage2.wueValues[x]);
       }
-      Serial.flush();
+      mySerial.flush();
     #endif
       break;
 
     case 'z': //Send 256 tooth log entries to a terminal emulator
-      sendToothLog(); //Sends tooth log values as chars
+      sendToothLog(mySerial); //Sends tooth log values as chars
       break;
 
     case '`': //Custom 16u2 firmware is making its presence known
       cmdPending = true;
 
-      if (Serial.available() >= 1) {
-        configPage4.bootloaderCaps = Serial.read();
+      if (mySerial.available() >= 1) {
+        configPage4.bootloaderCaps = mySerial.read();
         cmdPending = false;
       }
       break;
@@ -431,7 +430,7 @@ void command()
 
     case '?':
     #ifndef SMALL_FLASH_MODE
-      Serial.println
+      mySerial.println
       (F(
          "\n"
          "===Command Help===\n\n"
@@ -472,7 +471,7 @@ void command()
 This function returns the current values of a fixed group of variables
 */
 //void sendValues(int packetlength, byte portNum)
-void sendValues(uint16_t offset, uint16_t packetLength, byte cmd, byte portNum)
+void sendValues(uint16_t offset, uint16_t packetLength, byte cmd, byte portNum, Stream& mySerial)
 {
   byte fullStatus[SERIAL_PACKET_SIZE];
 
@@ -616,127 +615,121 @@ void sendValues(uint16_t offset, uint16_t packetLength, byte cmd, byte portNum)
 
   for(byte x=0; x<packetLength; x++)
   {
-    if (portNum == 0) { Serial.write(fullStatus[offset+x]); }
+    if (portNum == 0) { mySerial.write(fullStatus[offset+x]); }
     else if (portNum == 3){ CANSerial.write(fullStatus[offset+x]); }
   }
 
 }
 
-void sendValuesLegacy()
+void sendValuesLegacy(Stream& mySerial)
 {
   uint16_t temp;
   int bytestosend = 112;
-
-  bytestosend -= Serial.write(currentStatus.secl>>8);
-  bytestosend -= Serial.write(currentStatus.secl);
-  bytestosend -= Serial.write(currentStatus.PW1>>8);
-  bytestosend -= Serial.write(currentStatus.PW1);
-  bytestosend -= Serial.write(currentStatus.PW2>>8);
-  bytestosend -= Serial.write(currentStatus.PW2);
-  bytestosend -= Serial.write(currentStatus.RPM>>8);
-  bytestosend -= Serial.write(currentStatus.RPM);
-
+  bytestosend -= mySerial.write(currentStatus.secl>>8);
+  bytestosend -= mySerial.write(currentStatus.secl);
+  bytestosend -= mySerial.write(currentStatus.PW1>>8);
+  bytestosend -= mySerial.write(currentStatus.PW1);
+  bytestosend -= mySerial.write(currentStatus.PW2>>8);
+  bytestosend -= mySerial.write(currentStatus.PW2);
+  bytestosend -= mySerial.write(currentStatus.RPM>>8);
+  bytestosend -= mySerial.write(currentStatus.RPM);
   temp = currentStatus.advance * 10;
-  bytestosend -= Serial.write(temp>>8);
-  bytestosend -= Serial.write(temp);
+  bytestosend -= mySerial.write(temp>>8);
+  bytestosend -= mySerial.write(temp);
 
-  bytestosend -= Serial.write(currentStatus.nSquirts);
-  bytestosend -= Serial.write(currentStatus.engine);
-  bytestosend -= Serial.write(currentStatus.afrTarget);
-  bytestosend -= Serial.write(currentStatus.afrTarget); // send twice so afrtgt1 == afrtgt2
-  bytestosend -= Serial.write(99); // send dummy data as we don't have wbo2_en1
-  bytestosend -= Serial.write(99); // send dummy data as we don't have wbo2_en2
+  bytestosend -= mySerial.write(currentStatus.nSquirts);
+  bytestosend -= mySerial.write(currentStatus.engine);
+  bytestosend -= mySerial.write(currentStatus.afrTarget);
+  bytestosend -= mySerial.write(currentStatus.afrTarget); // send twice so afrtgt1 == afrtgt2
+  bytestosend -= mySerial.write(99); // send dummy data as we don't have wbo2_en1
+  bytestosend -= mySerial.write(99); // send dummy data as we don't have wbo2_en2
 
   temp = currentStatus.baro * 10;
-  bytestosend -= Serial.write(temp>>8);
-  bytestosend -= Serial.write(temp);
-
+  bytestosend -= mySerial.write(temp>>8);
+  bytestosend -= mySerial.write(temp);
   temp = currentStatus.MAP * 10;
-  bytestosend -= Serial.write(temp>>8);
-  bytestosend -= Serial.write(temp);
-
+  bytestosend -= mySerial.write(temp>>8);
+  bytestosend -= mySerial.write(temp);
   temp = currentStatus.IAT * 10;
-  bytestosend -= Serial.write(temp>>8);
-  bytestosend -= Serial.write(temp);
-
+  bytestosend -= mySerial.write(temp>>8);
+  bytestosend -= mySerial.write(temp);
   temp = currentStatus.coolant * 10;
-  bytestosend -= Serial.write(temp>>8);
-  bytestosend -= Serial.write(temp);
-
+  bytestosend -= mySerial.write(temp>>8);
+  bytestosend -= mySerial.write(temp);
   temp = currentStatus.TPS * 10;
-  bytestosend -= Serial.write(temp>>8);
-  bytestosend -= Serial.write(temp);
+  bytestosend -= mySerial.write(temp>>8);
+  bytestosend -= mySerial.write(temp);
 
-  bytestosend -= Serial.write(currentStatus.battery10>>8);
-  bytestosend -= Serial.write(currentStatus.battery10);
-  bytestosend -= Serial.write(currentStatus.O2>>8);
-  bytestosend -= Serial.write(currentStatus.O2);
-  bytestosend -= Serial.write(currentStatus.O2_2>>8);
-  bytestosend -= Serial.write(currentStatus.O2_2);
+  bytestosend -= mySerial.write(currentStatus.battery10>>8);
+  bytestosend -= mySerial.write(currentStatus.battery10);
+  bytestosend -= mySerial.write(currentStatus.O2>>8);
+  bytestosend -= mySerial.write(currentStatus.O2);
+  bytestosend -= mySerial.write(currentStatus.O2_2>>8);
+  bytestosend -= mySerial.write(currentStatus.O2_2);
 
-  bytestosend -= Serial.write(99); // knock
-  bytestosend -= Serial.write(99); // knock
+  bytestosend -= mySerial.write(99); // knock
+  bytestosend -= mySerial.write(99); // knock
 
   temp = currentStatus.egoCorrection * 10;
-  bytestosend -= Serial.write(temp>>8); // egocor1
-  bytestosend -= Serial.write(temp); // egocor1
-  bytestosend -= Serial.write(temp>>8); // egocor2
-  bytestosend -= Serial.write(temp); // egocor2
+  bytestosend -= mySerial.write(temp>>8); // egocor1
+  bytestosend -= mySerial.write(temp); // egocor1
+  bytestosend -= mySerial.write(temp>>8); // egocor2
+  bytestosend -= mySerial.write(temp); // egocor2
 
   temp = currentStatus.iatCorrection * 10;
-  bytestosend -= Serial.write(temp>>8); // aircor
-  bytestosend -= Serial.write(temp); // aircor
+  bytestosend -= mySerial.write(temp>>8); // aircor
+  bytestosend -= mySerial.write(temp); // aircor
 
   temp = currentStatus.wueCorrection * 10;
-  bytestosend -= Serial.write(temp>>8); // warmcor
-  bytestosend -= Serial.write(temp); // warmcor
+  bytestosend -= mySerial.write(temp>>8); // warmcor
+  bytestosend -= mySerial.write(temp); // warmcor
 
-  bytestosend -= Serial.write(99); // accelEnrich
-  bytestosend -= Serial.write(99); // accelEnrich
-  bytestosend -= Serial.write(99); // tpsFuelCut
-  bytestosend -= Serial.write(99); // tpsFuelCut
-  bytestosend -= Serial.write(99); // baroCorrection
-  bytestosend -= Serial.write(99); // baroCorrection
+  bytestosend -= mySerial.write(99); // accelEnrich
+  bytestosend -= mySerial.write(99); // accelEnrich
+  bytestosend -= mySerial.write(99); // tpsFuelCut
+  bytestosend -= mySerial.write(99); // tpsFuelCut
+  bytestosend -= mySerial.write(99); // baroCorrection
+  bytestosend -= mySerial.write(99); // baroCorrection
 
   temp = currentStatus.corrections * 10;
-  bytestosend -= Serial.write(temp>>8); // gammaEnrich
-  bytestosend -= Serial.write(temp); // gammaEnrich
+  bytestosend -= mySerial.write(temp>>8); // gammaEnrich
+  bytestosend -= mySerial.write(temp); // gammaEnrich
 
   temp = currentStatus.VE * 10;
-  bytestosend -= Serial.write(temp>>8); // ve1
-  bytestosend -= Serial.write(temp); // ve1
+  bytestosend -= mySerial.write(temp>>8); // ve1
+  bytestosend -= mySerial.write(temp); // ve1
   temp = currentStatus.VE2 * 10;
-  bytestosend -= Serial.write(temp>>8); // ve2
-  bytestosend -= Serial.write(temp); // ve2
+  bytestosend -= mySerial.write(temp>>8); // ve2
+  bytestosend -= mySerial.write(temp); // ve2
 
-  bytestosend -= Serial.write(99); // iacstep
-  bytestosend -= Serial.write(99); // iacstep
-  bytestosend -= Serial.write(99); // cold_adv_deg
-  bytestosend -= Serial.write(99); // cold_adv_deg
+  bytestosend -= mySerial.write(99); // iacstep
+  bytestosend -= mySerial.write(99); // iacstep
+  bytestosend -= mySerial.write(99); // cold_adv_deg
+  bytestosend -= mySerial.write(99); // cold_adv_deg
 
   temp = currentStatus.tpsDOT * 10;
-  bytestosend -= Serial.write(temp>>8); // TPSdot
-  bytestosend -= Serial.write(temp); // TPSdot
+  bytestosend -= mySerial.write(temp>>8); // TPSdot
+  bytestosend -= mySerial.write(temp); // TPSdot
 
   temp = currentStatus.mapDOT * 10;
-  bytestosend -= Serial.write(temp >> 8); // MAPdot
-  bytestosend -= Serial.write(temp); // MAPdot
+  bytestosend -= mySerial.write(temp >> 8); // MAPdot
+  bytestosend -= mySerial.write(temp); // MAPdot
 
   temp = currentStatus.dwell * 10;
-  bytestosend -= Serial.write(temp>>8); // dwell
-  bytestosend -= Serial.write(temp); // dwell
+  bytestosend -= mySerial.write(temp>>8); // dwell
+  bytestosend -= mySerial.write(temp); // dwell
 
-  bytestosend -= Serial.write(99); // MAF
-  bytestosend -= Serial.write(99); // MAF
-  bytestosend -= Serial.write(currentStatus.fuelLoad*10); // fuelload
-  bytestosend -= Serial.write(99); // fuelcor
-  bytestosend -= Serial.write(99); // fuelcor
-  bytestosend -= Serial.write(99); // portStatus
+  bytestosend -= mySerial.write(99); // MAF
+  bytestosend -= mySerial.write(99); // MAF
+  bytestosend -= mySerial.write(currentStatus.fuelLoad*10); // fuelload
+  bytestosend -= mySerial.write(99); // fuelcor
+  bytestosend -= mySerial.write(99); // fuelcor
+  bytestosend -= mySerial.write(99); // portStatus
 
   for(int i = 0; i < bytestosend; i++)
   {
     // send dummy data to fill remote's buffer
-    Serial.write(99);
+    mySerial.write(99);
   }
 }
 
@@ -959,7 +952,7 @@ void receiveValue(uint16_t valueOffset, byte newValue)
     default:
       break;
   }
-  //if(Serial.available() > 16) { command(); }
+  //if(mySerial.available() > 16) { command(); }
 }
 
 /**
@@ -968,7 +961,7 @@ void receiveValue(uint16_t valueOffset, byte newValue)
  * Note that some translation of the data is required to lay it out in the way Megasqurit / TunerStudio expect it
  * Data is sent in binary format, as defined by in each page in the ini
  */
-void sendPage()
+void sendPage(Stream& mySerial)
 {
   void* pnt_configPage = &configPage2; //Default value is for safety only. Will be changed below if needed.
   struct table3D currentTable = fuelTable; //Default value is for safety only. Will be changed below if needed.
@@ -1009,17 +1002,17 @@ void sendPage()
       for (int x = 0; x < 64; x++) { response[x] = boostTable.values[7 - (x / 8)][x % 8]; }
       for (int x = 64; x < 72; x++) { response[x] = byte(boostTable.axisX[(x - 64)] / TABLE_RPM_MULTIPLIER); }
       for (int y = 72; y < 80; y++) { response[y] = byte(boostTable.axisY[7 - (y - 72)]); }
-      Serial.write((byte *)&response, 80);
+      mySerial.write((byte *)&response, 80);
       //VVT table
       for (int x = 0; x < 64; x++) { response[x] = vvtTable.values[7 - (x / 8)][x % 8]; }
       for (int x = 64; x < 72; x++) { response[x] = byte(vvtTable.axisX[(x - 64)] / TABLE_RPM_MULTIPLIER); }
       for (int y = 72; y < 80; y++) { response[y] = byte(vvtTable.axisY[7 - (y - 72)]); }
-      Serial.write((byte *)&response, 80);
+      mySerial.write((byte *)&response, 80);
       //Staging table
       for (int x = 0; x < 64; x++) { response[x] = stagingTable.values[7 - (x / 8)][x % 8]; }
       for (int x = 64; x < 72; x++) { response[x] = byte(stagingTable.axisX[(x - 64)] / TABLE_RPM_MULTIPLIER); }
       for (int y = 72; y < 80; y++) { response[y] = byte(stagingTable.axisY[7 - (y - 72)] / TABLE_LOAD_MULTIPLIER); }
-      Serial.write((byte *)&response, 80);
+      mySerial.write((byte *)&response, 80);
       sendComplete = true;
       break;
     }
@@ -1044,7 +1037,7 @@ void sendPage()
       for (int x = 0; x < 36; x++) { response[x + 144] = trim4Table.values[5 - (x / 6)][x % 6]; }
       for (int x = 36; x < 42; x++) { response[x + 144] = byte(trim4Table.axisX[(x - 36)] / TABLE_RPM_MULTIPLIER); }
       for (int y = 42; y < 48; y++) { response[y + 144] = byte(trim4Table.axisY[5 - (y - 42)] / TABLE_LOAD_MULTIPLIER); }
-      Serial.write((byte *)&response, sizeof(response));
+      mySerial.write((byte *)&response, sizeof(response));
       sendComplete = true;
       break;
     }
@@ -1062,7 +1055,7 @@ void sendPage()
 
     default:
     #ifndef SMALL_FLASH_MODE
-        Serial.println(F("\nPage has not been implemented yet"));
+        mySerial.println(F("\nPage has not been implemented yet"));
     #endif
         //Just set default Values to avoid warnings
         pnt_configPage = &configPage10;
@@ -1084,17 +1077,17 @@ void sendPage()
         //loop();
         for (int y = 272; y < 288; y++) { response[y] = byte(currentTable.axisY[15 - (y - 272)] / TABLE_LOAD_MULTIPLIER); } //MAP or TPS bins for VE table
         //loop();
-        Serial.write((byte *)&response, sizeof(response));
+        mySerial.write((byte *)&response, sizeof(response));
     } //is map
     else
     {
       for (byte x = 0; x < npage_size[currentPage]; x++)
       {
         //response[x] = *((byte *)pnt_configPage + x);
-        Serial.write(*((byte *)pnt_configPage + x)); //Each byte is simply the location in memory of the configPage + the offset + the variable number (x)
+        mySerial.write(*((byte *)pnt_configPage + x)); //Each byte is simply the location in memory of the configPage + the offset + the variable number (x)
       }
 
-      //Serial.write((byte *)&response, npage_size[currentPage]);
+      //mySerial.write((byte *)&response, npage_size[currentPage]);
       // }
     } //isMap
   } //sendComplete
@@ -1105,7 +1098,7 @@ void sendPage()
  * 
  * This is used for testing only (Not used by TunerStudio) in order to see current map and config data without the need for TunerStudio. 
  */
-void sendPageASCII()
+void sendPageASCII(Stream& mySerial)
 {
   void* pnt_configPage = &configPage2; //Default value is for safety only. Will be changed below if needed.
   struct table3D currentTable = fuelTable; //Default value is for safety only. Will be changed below if needed.
@@ -1123,27 +1116,27 @@ void sendPageASCII()
       uint16_t* pnt16_configPage;
       // To Display Values from Config Page 1
       // When casting to the __FlashStringHelper type Serial.println uses the same subroutine as when using the F macro
-      Serial.println((const __FlashStringHelper *)&pageTitles[27]);//27 is the index to the first char in the second sting in pageTitles
+      mySerial.println((const __FlashStringHelper *)&pageTitles[27]);//27 is the index to the first char in the second sting in pageTitles
       // The following loop displays in human readable form of all byte values in config page 1 up to but not including the first array.
       // incrementing void pointers is cumbersome. Thus we have "pnt_configPage = (byte *)pnt_configPage + 1"
-      for (pnt_configPage = (byte *)&configPage2; pnt_configPage < &configPage2.wueValues[0]; pnt_configPage = (byte *)pnt_configPage + 1) { Serial.println(*((byte *)pnt_configPage)); }
+      for (pnt_configPage = (byte *)&configPage2; pnt_configPage < &configPage2.wueValues[0]; pnt_configPage = (byte *)pnt_configPage + 1) { mySerial.println(*((byte *)pnt_configPage)); }
       for (byte x = 10; x; x--)// The x between the ';' has the same representation as the "x != 0" test or comparision
       {
-        Serial.print(configPage2.wueValues[10 - x]);// This displays the values horizantially on the screen
-        Serial.print(F(" "));
+        mySerial.print(configPage2.wueValues[10 - x]);// This displays the values horizantially on the screen
+        mySerial.print(F(" "));
       }
-      Serial.println();
+      mySerial.println();
       for (pnt_configPage = (byte *)&configPage2.wueValues[9] + 1; pnt_configPage < &configPage2.inj1Ang; pnt_configPage = (byte *)pnt_configPage + 1) {
-        Serial.println(*((byte *)pnt_configPage));// This displays all the byte values between the last array up to but not including the first unsigned int on config page 1
+        mySerial.println(*((byte *)pnt_configPage));// This displays all the byte values between the last array up to but not including the first unsigned int on config page 1
       }
       // The following loop displays four unsigned ints
       for (pnt16_configPage = (uint16_t *)&configPage2.inj1Ang; pnt16_configPage < (uint16_t*)&configPage2.inj4Ang + 1; pnt16_configPage = (uint16_t*)pnt16_configPage + 1)
-      { Serial.println(*((uint16_t *)pnt16_configPage)); }
+      { mySerial.println(*((uint16_t *)pnt16_configPage)); }
       // Following loop displays byte values between the unsigned ints
-      for (pnt_configPage = (uint16_t *)&configPage2.inj4Ang + 1; pnt_configPage < &configPage2.mapMax; pnt_configPage = (byte *)pnt_configPage + 1) { Serial.println(*((byte *)pnt_configPage)); }
-      Serial.println(configPage2.mapMax);
+      for (pnt_configPage = (uint16_t *)&configPage2.inj4Ang + 1; pnt_configPage < &configPage2.mapMax; pnt_configPage = (byte *)pnt_configPage + 1) { mySerial.println(*((byte *)pnt_configPage)); }
+      mySerial.println(configPage2.mapMax);
       // Following loop displays remaining byte values of the page
-      for (pnt_configPage = (uint16_t *)&configPage2.mapMax + 1; pnt_configPage < (byte *)&configPage2 + npage_size[veSetPage]; pnt_configPage = (byte *)pnt_configPage + 1) { Serial.println(*((byte *)pnt_configPage)); }
+      for (pnt_configPage = (uint16_t *)&configPage2.mapMax + 1; pnt_configPage < (byte *)&configPage2 + npage_size[veSetPage]; pnt_configPage = (byte *)pnt_configPage + 1) { mySerial.println(*((byte *)pnt_configPage)); }
       sendComplete = true;
       break;
 
@@ -1154,10 +1147,10 @@ void sendPageASCII()
 
     case ignSetPage:
       //To Display Values from Config Page 2
-      Serial.println((const __FlashStringHelper *)&pageTitles[56]);
-      Serial.println(configPage4.triggerAngle);// configPsge2.triggerAngle is an int so just display it without complication
+      mySerial.println((const __FlashStringHelper *)&pageTitles[56]);
+      mySerial.println(configPage4.triggerAngle);// configPsge2.triggerAngle is an int so just display it without complication
       // Following loop displays byte values after that first int up to but not including the first array in config page 2
-      for (pnt_configPage = (int *)&configPage4 + 1; pnt_configPage < &configPage4.taeBins[0]; pnt_configPage = (byte *)pnt_configPage + 1) { Serial.println(*((byte *)pnt_configPage)); }
+      for (pnt_configPage = (int *)&configPage4 + 1; pnt_configPage < &configPage4.taeBins[0]; pnt_configPage = (byte *)pnt_configPage + 1) { mySerial.println(*((byte *)pnt_configPage)); }
       for (byte y = 2; y; y--)// Displaying two equal sized arrays
       {
         byte * currentVar;// A placeholder for each array
@@ -1170,27 +1163,27 @@ void sendPageASCII()
 
         for (byte j = 4; j; j--)
         {
-          Serial.print(currentVar[4 - j]);
-          Serial.print(' ');
+          mySerial.print(currentVar[4 - j]);
+          mySerial.print(' ');
         }
-        Serial.println();
+        mySerial.println();
       }
       for (byte x = 10; x ; x--)
       {
-        Serial.print(configPage4.wueBins[10 - x]);//Displaying array horizontally across screen
-        Serial.print(' ');
+        mySerial.print(configPage4.wueBins[10 - x]);//Displaying array horizontally across screen
+        mySerial.print(' ');
       }
-      Serial.println();
-      Serial.println(configPage4.dwellLimit);// Little lonely byte stuck between two arrays. No complications just display it.
+      mySerial.println();
+      mySerial.println(configPage4.dwellLimit);// Little lonely byte stuck between two arrays. No complications just display it.
       for (byte x = 6; x; x--)
       {
-        Serial.print(configPage4.dwellCorrectionValues[6 - x]);
-        Serial.print(' ');
+        mySerial.print(configPage4.dwellCorrectionValues[6 - x]);
+        mySerial.print(' ');
       }
-      Serial.println();
+      mySerial.println();
       for (pnt_configPage = (byte *)&configPage4.dwellCorrectionValues[5] + 1; pnt_configPage < (byte *)&configPage4 + npage_size[ignSetPage]; pnt_configPage = (byte *)pnt_configPage + 1)
       {
-        Serial.println(*((byte *)pnt_configPage));// Displaying remaining byte values of the page
+        mySerial.println(*((byte *)pnt_configPage));// Displaying remaining byte values of the page
       }
       sendComplete = true;
       break;
@@ -1203,10 +1196,10 @@ void sendPageASCII()
     case afrSetPage:
       //currentTitleIndex = 91;
       //To Display Values from Config Page 3
-      Serial.println((const __FlashStringHelper *)&pageTitles[91]);//special typecasting to enable suroutine that the F macro uses
+      mySerial.println((const __FlashStringHelper *)&pageTitles[91]);//special typecasting to enable suroutine that the F macro uses
       for (pnt_configPage = (byte *)&configPage6; pnt_configPage < &configPage6.voltageCorrectionBins[0]; pnt_configPage = (byte *)pnt_configPage + 1)
       {
-        Serial.println(*((byte *)pnt_configPage));// Displaying byte values of config page 3 up to but not including the first array
+        mySerial.println(*((byte *)pnt_configPage));// Displaying byte values of config page 3 up to but not including the first array
       }
       for (byte y = 2; y; y--)// Displaying two equally sized arrays that are next to each other
       {
@@ -1216,10 +1209,10 @@ void sendPageASCII()
 
         for (byte i = 6; i; i--)
         {
-          Serial.print(currentVar[6 - i]);
-          Serial.print(' ');
+          mySerial.print(currentVar[6 - i]);
+          mySerial.print(' ');
         }
-        Serial.println();
+        mySerial.println();
       }
       for (byte y = 2; y; y--)// and again
       {
@@ -1229,21 +1222,21 @@ void sendPageASCII()
 
         for (byte i = 9; i; i--)
         {
-          Serial.print(currentVar[9 - i]);
-          Serial.print(' ');
+          mySerial.print(currentVar[9 - i]);
+          mySerial.print(' ');
         }
-        Serial.println();
+        mySerial.println();
       }
       // Following loop displays the remaining byte values of the page
       for (pnt_configPage = (byte *)&configPage6.airDenRates[8] + 1; pnt_configPage < (byte *)&configPage6 + npage_size[afrSetPage]; pnt_configPage = (byte *)pnt_configPage + 1)
       {
-        Serial.println(*((byte *)pnt_configPage));
+        mySerial.println(*((byte *)pnt_configPage));
       }
       sendComplete = true;
 
       //Old configPage4 STARTED HERE!
       //currentTitleIndex = 106;
-      Serial.println((const __FlashStringHelper *)&pageTitles[106]);// F macro hack
+      mySerial.println((const __FlashStringHelper *)&pageTitles[106]);// F macro hack
       for (byte y = 4; y; y--)// Display four equally sized arrays
       {
         byte * currentVar;
@@ -1257,10 +1250,10 @@ void sendPageASCII()
         }
         for (byte i = 10; i; i--)
         {
-          Serial.print(currentVar[10 - i]);
-          Serial.print(' ');
+          mySerial.print(currentVar[10 - i]);
+          mySerial.print(' ');
         }
-        Serial.println();
+        mySerial.println();
       }
       for (byte y = 3; y; y--)// Three equally sized arrays
       {
@@ -1274,13 +1267,13 @@ void sendPageASCII()
         }
         for (byte i = 4; i; i--)
         {
-          Serial.print(currentVar[4 - i]);
-          Serial.print(' ');
+          mySerial.print(currentVar[4 - i]);
+          mySerial.print(' ');
         }
-        Serial.println();
+        mySerial.println();
       }
       // Following loop is for remaining byte value of page
-      for (pnt_configPage = (byte *)&configPage6.iacCrankBins[3] + 1; pnt_configPage < (byte *)&configPage6 + npage_size[afrSetPage]; pnt_configPage = (byte *)pnt_configPage + 1) { Serial.println(*((byte *)pnt_configPage)); }
+      for (pnt_configPage = (byte *)&configPage6.iacCrankBins[3] + 1; pnt_configPage < (byte *)&configPage6 + npage_size[afrSetPage]; pnt_configPage = (byte *)pnt_configPage + 1) { mySerial.println(*((byte *)pnt_configPage)); }
       sendComplete = true;
       break;
 
@@ -1296,29 +1289,29 @@ void sendPageASCII()
         byte axisY = byte(currentTable.axisY[y]);
         if (axisY < 100)
         {
-          Serial.write(" ");
+          mySerial.write(" ");
           if (axisY < 10)
           {
-            Serial.write(" ");
+            mySerial.write(" ");
           }
         }
-        Serial.print(axisY);// Vertical Bins
-        Serial.write(" ");
+        mySerial.print(axisY);// Vertical Bins
+        mySerial.write(" ");
         for (int i = 0; i < currentTable.xSize; i++)
         {
           byte value = currentTable.values[y][i];
           if (value < 100)
           {
-            Serial.write(" ");
+            mySerial.write(" ");
             if (value < 10)
             {
-              Serial.write(" ");
+              mySerial.write(" ");
             }
           }
-          Serial.print(value);
-          Serial.write(" ");
+          mySerial.print(value);
+          mySerial.write(" ");
         }
-        Serial.println("");
+        mySerial.println("");
       }
       sendComplete = true;
       break;
@@ -1326,10 +1319,10 @@ void sendPageASCII()
     case canbusPage:
       //currentTitleIndex = 141;
       //To Display Values from Config Page 10
-      Serial.println((const __FlashStringHelper *)&pageTitles[103]);//special typecasting to enable suroutine that the F macro uses
+      mySerial.println((const __FlashStringHelper *)&pageTitles[103]);//special typecasting to enable suroutine that the F macro uses
       for (pnt_configPage = &configPage9; pnt_configPage < ( (byte *)&configPage9 + npage_size[canbusPage]); pnt_configPage = (byte *)pnt_configPage + 1)
       {
-        Serial.println(*((byte *)pnt_configPage));// Displaying byte values of config page 9 up to but not including the first array
+        mySerial.println(*((byte *)pnt_configPage));// Displaying byte values of config page 9 up to but not including the first array
       }
       sendComplete = true;
       break;
@@ -1337,7 +1330,7 @@ void sendPageASCII()
     case warmupPage:
       //NOT WRITTEN YET
       #ifndef SMALL_FLASH_MODE
-        Serial.println(F("\nPage has not been implemented yet"));
+        mySerial.println(F("\nPage has not been implemented yet"));
       #endif
       sendComplete = true;
       break;
@@ -1349,7 +1342,7 @@ void sendPageASCII()
 
     default:
     #ifndef SMALL_FLASH_MODE
-        Serial.println(F("\nPage has not been implemented yet"));
+        mySerial.println(F("\nPage has not been implemented yet"));
     #endif
         //Just set default Values to avoid warnings
         pnt_configPage = &configPage10;
@@ -1365,53 +1358,53 @@ void sendPageASCII()
       do {
         const char spaceChar = ' ';
 
-        Serial.println((const __FlashStringHelper *)&pageTitles[currentTitleIndex]);// F macro hack
-        Serial.println();
+        mySerial.println((const __FlashStringHelper *)&pageTitles[currentTitleIndex]);// F macro hack
+        mySerial.println();
         for (int y = 0; y < currentTable.ySize; y++)
         {
           byte axisY = byte(currentTable.axisY[y]);
           if (axisY < 100)
           {
-            Serial.write(spaceChar);
+            mySerial.write(spaceChar);
             if (axisY < 10)
             {
-              Serial.write(spaceChar);
+              mySerial.write(spaceChar);
             }
           }
-          Serial.print(axisY);// Vertical Bins
-          Serial.write(spaceChar);
+          mySerial.print(axisY);// Vertical Bins
+          mySerial.write(spaceChar);
           for (int i = 0; i < currentTable.xSize; i++)
           {
             byte value = currentTable.values[y][i];
             if (value < 100)
             {
-              Serial.write(spaceChar);
+              mySerial.write(spaceChar);
               if (value < 10)
               {
-                Serial.write(spaceChar);
+                mySerial.write(spaceChar);
               }
             }
-            Serial.print(value);
-            Serial.write(spaceChar);
+            mySerial.print(value);
+            mySerial.write(spaceChar);
           }
-          Serial.println();
+          mySerial.println();
         }
-        Serial.print(F("    "));
+        mySerial.print(F("    "));
         for (int x = 0; x < currentTable.xSize; x++)// Horizontal bins
         {
           byte axisX = byte(currentTable.axisX[x] / 100);
           if (axisX < 100)
           {
-            Serial.write(spaceChar);
+            mySerial.write(spaceChar);
             if (axisX < 10)
             {
-              Serial.write(spaceChar);
+              mySerial.write(spaceChar);
             }
           }
-          Serial.print(axisX);
-          Serial.write(spaceChar);
+          mySerial.print(axisX);
+          mySerial.write(spaceChar);
         }
-        Serial.println();
+        mySerial.println();
         if(currentTitleIndex == 121) //Check to see if on boostTable
         {
           currentTitleIndex = 132; //Change over to vvtTable mid display
@@ -1426,11 +1419,11 @@ void sendPageASCII()
       {
        while(pageTitles[currentTitleIndex])
        {
-        Serial.print(pageTitles[currentTitleIndex]);
+        mySerial.print(pageTitles[currentTitleIndex]);
         currentTitleIndex++;
        }
-       Serial.println();
-       for(byte x=0;x<page_size;x++) Serial.println(*((byte *)pnt_configPage + x));
+       mySerial.println();
+       for(byte x=0;x<page_size;x++) mySerial.println(*((byte *)pnt_configPage + x));
       }
       else
       {*/
@@ -1439,7 +1432,7 @@ void sendPageASCII()
       for (byte x = 0; x < npage_size[currentPage]; x++)
       {
         //response[x] = *((byte *)pnt_configPage + x);
-        Serial.write(*((byte *)pnt_configPage + x)); //Each byte is simply the location in memory of the configPage + the offset + the variable number (x)
+        mySerial.write(*((byte *)pnt_configPage + x)); //Each byte is simply the location in memory of the configPage + the offset + the variable number (x)
       }
     } //isMap
   } //sendComplete
@@ -1593,7 +1586,7 @@ byte getPageValue(byte page, uint16_t valueAddress)
  * 
  * @param tableID Which calibration table to process. 0 = Coolant Sensor. 1 = IAT Sensor. 2 = O2 Sensor.
  */
-void receiveCalibration(byte tableID)
+void receiveCalibration(byte tableID, Stream& mySerial)
 {
   byte* pnt_TargetTable; //Pointer that will be used to point to the required target table
   int OFFSET, DIVISION_FACTOR, BYTES_PER_VALUE, EEPROM_START;
@@ -1654,14 +1647,14 @@ void receiveCalibration(byte tableID)
     //UNlike what is listed in the protocol documentation, the O2 sensor values are sent as bytes rather than ints
     if (BYTES_PER_VALUE == 1)
     {
-      while ( Serial.available() < 1 ) {}
-      tempValue = Serial.read();
+      while ( mySerial.available() < 1 ) {}
+      tempValue = mySerial.read();
     }
     else
     {
-      while ( Serial.available() < 2 ) {}
-      tempBuffer[0] = Serial.read();
-      tempBuffer[1] = Serial.read();
+      while ( mySerial.available() < 2 ) {}
+      tempBuffer[0] = mySerial.read();
+      tempBuffer[1] = mySerial.read();
 
       tempValue = div(int(word(tempBuffer[1], tempBuffer[0])), DIVISION_FACTOR).quot; //Read 2 bytes, convert to word (an unsigned int), convert to signed int. These values come through * 10 from Tuner Studio
       tempValue = ((tempValue - 32) * 5) / 9; //Convert from F to C
@@ -1708,19 +1701,19 @@ Send 256 tooth log entries
  * if useChar is true, the values are sent as chars to be printed out by a terminal emulator
  * if useChar is false, the values are sent as a 2 byte integer which is readable by TunerStudios tooth logger
 */
-void sendToothLog()
+void sendToothLog(Stream& mySerial)
 {
   //We need TOOTH_LOG_SIZE number of records to send to TunerStudio. If there aren't that many in the buffer then we just return and wait for the next call
   if (BIT_CHECK(currentStatus.status1, BIT_STATUS1_TOOTHLOG1READY)) //Sanity check. Flagging system means this should always be true
   {
       for (int x = 0; x < TOOTH_LOG_SIZE; x++)
       {
-        //Serial.write(highByte(toothHistory[toothHistorySerialIndex]));
-        //Serial.write(lowByte(toothHistory[toothHistorySerialIndex]));
-        Serial.write(toothHistory[toothHistorySerialIndex] >> 24);
-        Serial.write(toothHistory[toothHistorySerialIndex] >> 16);
-        Serial.write(toothHistory[toothHistorySerialIndex] >> 8);
-        Serial.write(toothHistory[toothHistorySerialIndex]);
+        //mySerial.write(highByte(toothHistory[toothHistorySerialIndex]));
+        //mySerial.write(lowByte(toothHistory[toothHistorySerialIndex]));
+        mySerial.write(toothHistory[toothHistorySerialIndex] >> 24);
+        mySerial.write(toothHistory[toothHistorySerialIndex] >> 16);
+        mySerial.write(toothHistory[toothHistorySerialIndex] >> 8);
+        mySerial.write(toothHistory[toothHistorySerialIndex]);
 
         if(toothHistorySerialIndex == (TOOTH_LOG_BUFFER-1)) { toothHistorySerialIndex = 0; }
         else { toothHistorySerialIndex++; }
@@ -1731,7 +1724,7 @@ void sendToothLog()
   else { cmdPending = true; } //Mark this request as being incomplete. 
 }
 
-void sendCompositeLog()
+void sendCompositeLog(Stream& mySerial)
 {
   if (BIT_CHECK(currentStatus.status1, BIT_STATUS1_TOOTHLOG1READY)) //Sanity check. Flagging system means this should always be true
   {
@@ -1740,17 +1733,17 @@ void sendCompositeLog()
       {
         runTime += toothHistory[toothHistorySerialIndex]; //This combined runtime (in us) that the log was going for by this record)
         
-        //Serial.write(highByte(runTime));
-        //Serial.write(lowByte(runTime));
-        Serial.write(runTime >> 24);
-        Serial.write(runTime >> 16);
-        Serial.write(runTime >> 8);
-        Serial.write(runTime);
+        //mySerial.write(highByte(runTime));
+        //mySerial.write(lowByte(runTime));
+        mySerial.write(runTime >> 24);
+        mySerial.write(runTime >> 16);
+        mySerial.write(runTime >> 8);
+        mySerial.write(runTime);
 
-        //Serial.write(highByte(toothHistory[toothHistorySerialIndex]));
-        //Serial.write(lowByte(toothHistory[toothHistorySerialIndex]));
+        //mySerial.write(highByte(toothHistory[toothHistorySerialIndex]));
+        //mySerial.write(lowByte(toothHistory[toothHistorySerialIndex]));
 
-        Serial.write(compositeLogHistory[toothHistorySerialIndex]); //The status byte (Indicates which)
+        mySerial.write(compositeLogHistory[toothHistorySerialIndex]); //The status byte (Indicates which)
 
         
 
@@ -1763,9 +1756,9 @@ void sendCompositeLog()
   else { cmdPending = true; } //Mark this request as being incomplete. 
 }
 
-void testComm()
+void testComm(Stream& mySerial)
 {
-  Serial.write(1);
+  mySerial.write(1);
   return;
 }
 

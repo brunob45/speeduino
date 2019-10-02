@@ -38,6 +38,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "crankMaths.h"
 #include "init.h"
 #include BOARD_H //Note that this is not a real file, it is defined in globals.h. 
+#include EEPROM_LIB_H
 
 void setup()
 {
@@ -52,13 +53,14 @@ void loop()
       // 1) Every 64 loops (64 Is more than fast enough for TunerStudio). This function is equivalent to ((loopCount % 64) == 1) but is considerably faster due to not using the mod or division operations
       // 2) If the amount of data in the serial buffer is greater than a set threhold (See globals.h). This is to avoid serial buffer overflow when large amounts of data is being sent
       //if ( (BIT_CHECK(TIMER_mask, BIT_TIMER_15HZ)) || (Serial.available() > SERIAL_BUFFER_THRESHOLD) )
-      if ( ((mainLoopCount & 31) == 1) or (Serial.available() > SERIAL_BUFFER_THRESHOLD) )
+      if ( ((mainLoopCount & 31) == 1) or (Serial.available() > SERIAL_BUFFER_THRESHOLD) or (Serial1.available() > SERIAL_BUFFER_THRESHOLD) )
       {
-        if (Serial.available() > 0) { command(); }
+        if (Serial1.available() > 0) { command(Serial1); }
+        if (Serial.available() > 0) { command(Serial); }
         else if(cmdPending == true)
         {
           //This is a special case just for the tooth and composite loggers
-          if (currentCommand == 'T') { command(); }
+          if (currentCommand == 'T') { command(Serial); }
         }
         
       }
@@ -89,6 +91,7 @@ void loop()
     unsigned long timeToLastTooth = (currentLoopTime - toothLastToothTime);
     if ( (timeToLastTooth < MAX_STALL_TIME) || (toothLastToothTime > currentLoopTime) ) //Check how long ago the last tooth was seen compared to now. If it was more than half a second ago then the engine is probably stopped. toothLastToothTime can be greater than currentLoopTime if a pulse occurs between getting the lastest time and doing the comparison
     {
+      digitalWrite(pinEngineCheck, HIGH); // ECL is inverted, HIGH output = ECL off
       currentStatus.longRPM = getRPM(); //Long RPM is included here
       currentStatus.RPM = currentStatus.longRPM;
       FUEL_PUMP_ON();
@@ -97,6 +100,7 @@ void loop()
     else
     {
       //We reach here if the time between teeth is too great. This VERY likely means the engine has stopped
+      digitalWrite(pinEngineCheck, LOW); // ECL is inverted, LOW output = ECL on
       currentStatus.RPM = 0;
       currentStatus.PW1 = 0;
       currentStatus.VE = 0;
@@ -219,7 +223,16 @@ void loop()
       readBat();
       nitrousControl();
 
-      if(eepromWritesPending == true) { writeAllConfig(); } //Check for any outstanding EEPROM writes.
+      //Check for any outstanding EEPROM writes.
+      if(EEPROM.isDirty())
+      {
+        EEPROM.writeAllPages();
+        digitalWrite(LED_BUILTIN, HIGH);
+      }
+      else
+      {
+        digitalWrite(LED_BUILTIN, LOW);
+      }
 
       if(auxIsEnabled == true)
       {
@@ -794,8 +807,10 @@ void loop()
       //   }
       // }
 
+      bool limiterFuelCut = (configPage2.RevLimiterMode & 0b01) && BIT_CHECK(currentStatus.spark, BIT_SPARK_HRDLIM);
+
 #if INJ_CHANNELS >= 1
-      if (fuelOn && !BIT_CHECK(currentStatus.status1, BIT_STATUS1_BOOSTCUT))
+      if (fuelOn && !BIT_CHECK(currentStatus.status1, BIT_STATUS1_BOOSTCUT) && !limiterFuelCut)
       {
         if(currentStatus.PW1 >= inj_opentime_uS)
         {
@@ -975,7 +990,8 @@ void loop()
 
       //Perform an initial check to see if the ignition is turned on (Ignition only turns on after a preset number of cranking revolutions and:
       //Check for any of the hard cut rev limits being on
-      if(currentStatus.launchingHard || BIT_CHECK(currentStatus.spark, BIT_SPARK_BOOSTCUT) || BIT_CHECK(currentStatus.spark, BIT_SPARK_HRDLIM) || currentStatus.flatShiftingHard)
+      bool limiterSparkCut = (configPage2.RevLimiterMode & 0b10) && BIT_CHECK(currentStatus.spark, BIT_SPARK_HRDLIM);
+      if(currentStatus.launchingHard || BIT_CHECK(currentStatus.spark, BIT_SPARK_BOOSTCUT) || limiterSparkCut || currentStatus.flatShiftingHard)
       {
         if(configPage2.hardCutType == HARD_CUT_FULL) { ignitionOn = false; }
         else 
