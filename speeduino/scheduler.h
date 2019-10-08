@@ -33,19 +33,19 @@ void setFuelSchedule1(unsigned long timeout, unsigned long duration);
 void setFuelSchedule2(unsigned long timeout, unsigned long duration);
 void setFuelSchedule3(unsigned long timeout, unsigned long duration);
 void setFuelSchedule4(unsigned long timeout, unsigned long duration);
-void setFuelSchedule5(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)()); //Schedule 5 remains a special case for now due to the way it's implemented 
+void setFuelSchedule5(unsigned long timeout, unsigned long duration); //Schedule 5 remains a special case for now due to the way it's implemented 
 //void setFuelSchedule5(unsigned long timeout, unsigned long duration);
 void setFuelSchedule6(unsigned long timeout, unsigned long duration);
 void setFuelSchedule7(unsigned long timeout, unsigned long duration);
 void setFuelSchedule8(unsigned long timeout, unsigned long duration);
-void setIgnitionSchedule1(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule2(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule3(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule4(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule5(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule6(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule7(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
-void setIgnitionSchedule8(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)());
+void setIgnitionSchedule1(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule2(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule3(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule4(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule5(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule6(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule7(unsigned long timeout, unsigned long duration);
+void setIgnitionSchedule8(unsigned long timeout, unsigned long duration);
 
 static inline void refreshIgnitionSchedule1(unsigned long timeToEnd) __attribute__((always_inline));
 
@@ -106,7 +106,6 @@ struct Schedule {
   volatile COMPARE_TYPE endCompare;
 
   unsigned int nextStartCompare;
-  unsigned int nextEndCompare;
   volatile bool hasNextSchedule = false;
   volatile bool endScheduleSetByDecoder = false;
 #if defined(CORE_AVR) || defined(CORE_TEENSY40)

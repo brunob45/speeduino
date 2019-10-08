@@ -1009,11 +1009,10 @@ void loop()
         {
             if(ignitionSchedule1.Status != RUNNING)
             {
-              setIgnitionSchedule1(ign1StartFunction,
+              setIgnitionSchedule1(
                         //((unsigned long)(ignition1StartAngle - crankAngle) * (unsigned long)timePerDegree),
                         angleToTime((ignition1StartAngle - crankAngle), CRANKMATH_METHOD_INTERVAL_REV),
-                        currentStatus.dwell + fixedCrankingOverride, //((unsigned long)((unsigned long)currentStatus.dwell* currentStatus.RPM) / newRPM) + fixedCrankingOverride,
-                        ign1EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }
@@ -1055,10 +1054,9 @@ void loop()
 
             if( (ignition2StartTime > 0) && (curRollingCut != 2) )
             {
-              setIgnitionSchedule2(ign2StartFunction,
+              setIgnitionSchedule2(
                         ignition2StartTime,
-                        currentStatus.dwell + fixedCrankingOverride,
-                        ign2EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }
@@ -1078,10 +1076,9 @@ void loop()
 
             if( (ignition3StartTime > 0) && (curRollingCut != 3) )
             {
-              setIgnitionSchedule3(ign3StartFunction,
+              setIgnitionSchedule3(
                         ignition3StartTime,
-                        currentStatus.dwell + fixedCrankingOverride,
-                        ign3EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }
@@ -1102,10 +1099,9 @@ void loop()
 
             if( (ignition4StartTime > 0) && (curRollingCut != 4) )
             {
-              setIgnitionSchedule4(ign4StartFunction,
+              setIgnitionSchedule4(
                         ignition4StartTime,
-                        currentStatus.dwell + fixedCrankingOverride,
-                        ign4EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }
@@ -1125,10 +1121,9 @@ void loop()
             else { ignition5StartTime = 0; }
 
             if( (ignition5StartTime > 0) && (curRollingCut != 5) ) {
-            setIgnitionSchedule5(ign5StartFunction,
+            setIgnitionSchedule5(
                       ignition5StartTime,
-                      currentStatus.dwell + fixedCrankingOverride,
-                      ign5EndFunction
+                      currentStatus.dwell + fixedCrankingOverride
                       );
             }
         }
@@ -1146,10 +1141,9 @@ void loop()
 
             if( (ignition6StartTime > 0) && (curRollingCut != 2) )
             {
-              setIgnitionSchedule6(ign6StartFunction,
+              setIgnitionSchedule6(
                         ignition6StartTime,
-                        currentStatus.dwell + fixedCrankingOverride,
-                        ign6EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }
@@ -1167,10 +1161,9 @@ void loop()
 
             if( (ignition7StartTime > 0) && (curRollingCut != 2) )
             {
-              setIgnitionSchedule7(ign7StartFunction,
+              setIgnitionSchedule7(
                         ignition7StartTime,
-                        currentStatus.dwell + fixedCrankingOverride,
-                        ign7EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }
@@ -1188,10 +1181,9 @@ void loop()
 
             if( (ignition8StartTime > 0) && (curRollingCut != 2) )
             {
-              setIgnitionSchedule8(ign8StartFunction,
+              setIgnitionSchedule8(
                         ignition8StartTime,
-                        currentStatus.dwell + fixedCrankingOverride,
-                        ign8EndFunction
+                        currentStatus.dwell + fixedCrankingOverride
                         );
             }
         }

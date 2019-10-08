@@ -116,30 +116,36 @@ duration: The number of uS after startCallback is called before endCallback is c
 endCallback: This function is called once the duration time has been reached
 */
 
-#define DECLARE_SET_FUEL_SCHEDULE(n)\
-void setFuelSchedule##n(unsigned long timeout, unsigned long duration){\
+#define _DECLARE_SET_SCHEDULE(scheduleName, scheduleMacro)\
   /*Check whether timeout exceeds the maximum future time. This can potentially occur on sequential setups when below ~115rpm*/\
-  if(timeout < MAX_TIMER_PERIOD){\
+  if(timeout < MAX_TIMER_PERIOD && duration < MAX_TIMER_PERIOD){\
     /*The following must be enclosed in the noInterupts block to avoid contention caused if the relevant interrupt fires before the state is fully set*/\
     noInterrupts();\
-    fuelSchedule##n.duration = duration;\
-    if(fuelSchedule##n.Status != RUNNING){ /*Check that we're not already part way through a schedule*/\
-      fuelSchedule##n.startCompare = FUEL##n##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
-      fuelSchedule##n.endCompare = fuelSchedule##n.startCompare + uS_TO_TIMER_COMPARE(duration);\
-      fuelSchedule##n.Status = PENDING; /*Turn this schedule on*/\
-      fuelSchedule##n.schedulesSet++; /*Increment the number of times this schedule has been set*/\
-      FUEL##n##_COMPARE = fuelSchedule##n.startCompare;\
+    scheduleName.duration = duration;\
+    if(scheduleName.Status != RUNNING){ /*Check that we're not already part way through a schedule*/\
+      scheduleName.startCompare = scheduleMacro##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
+      scheduleName.Status = PENDING; /*Turn this schedule on*/\
+      scheduleName.schedulesSet++; /*Increment the number of times this schedule has been set*/\
+      scheduleMacro##_COMPARE = scheduleName.startCompare;\
       interrupts();\
-      FUEL##n##_TIMER_ENABLE();\
+      scheduleMacro##_TIMER_ENABLE();\
     } else {\
       /*If the schedule is already running, we can set the next schedule so it is ready to go*/\
       /*This is required in cases of high rpm and high DC where there otherwise would not be enough time to set the schedule*/\
-      fuelSchedule##n.nextStartCompare = FUEL##n##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
-      fuelSchedule##n.nextEndCompare = fuelSchedule##n.nextStartCompare + uS_TO_TIMER_COMPARE(duration);\
-      fuelSchedule##n.hasNextSchedule = true;\
+      scheduleName.nextStartCompare = scheduleMacro##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
+      scheduleName.hasNextSchedule = true;\
       interrupts();\
     } /*Schedule is RUNNING*/\
   } /*Timeout less than threshold*/\
+
+#define DECLARE_SET_FUEL_SCHEDULE(n)\
+void setFuelSchedule##n(unsigned long timeout, unsigned long duration){\
+  _DECLARE_SET_SCHEDULE(fuelSchedule##n, FUEL##n)\
+}
+
+#define DECLARE_SET_IGN_SCHEDULE(n)\
+void setIgnitionSchedule##n(unsigned long timeout, unsigned long duration){\
+  _DECLARE_SET_SCHEDULE(ignitionSchedule##n, IGN##n)\
 }
 
 DECLARE_SET_FUEL_SCHEDULE(1);
@@ -150,37 +156,6 @@ DECLARE_SET_FUEL_SCHEDULE(5);
 DECLARE_SET_FUEL_SCHEDULE(6);
 DECLARE_SET_FUEL_SCHEDULE(7);
 DECLARE_SET_FUEL_SCHEDULE(8);
-
-#define DECLARE_SET_IGN_SCHEDULE(n)\
-void setIgnitionSchedule##n(void (*startCallback)(), unsigned long timeout, unsigned long duration, void(*endCallback)()){\
-  /*Check whether timeout exceeds the maximum future time. This can potentially occur on sequential setups when below ~115rpm*/\
-  if(timeout < MAX_TIMER_PERIOD){\
-    /*The following must be enclosed in the noInterupts block to avoid contention caused if the relevant interrupt fires before the state is fully set*/\
-    noInterrupts();\
-    ignitionSchedule##n.duration = duration;\
-    if(ignitionSchedule##n.Status != RUNNING){ /*Check that we're not already part way through a schedule*/\
-      ignitionSchedule##n.StartCallback = startCallback; /*Name the start callback function*/\
-      ignitionSchedule##n.EndCallback = endCallback; /*Name the end callback function*/\
-      ignitionSchedule##n.startCompare = IGN##n##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
-      if(ignitionSchedule##n.endScheduleSetByDecoder == false) {\
-        /*The .endCompare value is also set by the per tooth timing in decoders.ino. The check here is so that it's not getting overridden.*/\
-        ignitionSchedule##n.endCompare = ignitionSchedule##n.startCompare + uS_TO_TIMER_COMPARE(duration);\
-      }\
-      ignitionSchedule##n.Status = PENDING; /*Turn this schedule on*/\
-      ignitionSchedule##n.schedulesSet++;\
-      IGN##n##_COMPARE = ignitionSchedule##n.startCompare;\
-      interrupts();\
-      IGN##n##_TIMER_ENABLE();\
-    } else {\
-      /*If the schedule is already running, we can set the next schedule so it is ready to go*/\
-      /*This is required in cases of high rpm and high DC where there otherwise would not be enough time to set the schedule*/\
-      ignitionSchedule##n.nextStartCompare = IGN##n##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
-      ignitionSchedule##n.nextEndCompare = ignitionSchedule##n.nextStartCompare + uS_TO_TIMER_COMPARE(duration);\
-      ignitionSchedule##n.hasNextSchedule = true;\
-      interrupts();\
-    } /*Schedule is RUNNING*/\
-  } /*Timeout less than threshold*/\
-}
 
 DECLARE_SET_IGN_SCHEDULE(1);
 DECLARE_SET_IGN_SCHEDULE(2);
@@ -230,13 +205,11 @@ static inline void fuelSchedule1Interrupt() //Most ARM chips can simply call a f
        else { closeInjector1(); }
        fuelSchedule1.Status = OFF; //Turn off the schedule
        fuelSchedule1.schedulesSet = 0;
-       //FUEL1_COMPARE = fuelSchedule1.endCompare;
 
        //If there is a next schedule queued up, activate it
        if(fuelSchedule1.hasNextSchedule == true)
        {
          FUEL1_COMPARE = fuelSchedule1.nextStartCompare;
-         fuelSchedule1.endCompare = fuelSchedule1.nextEndCompare;
          fuelSchedule1.Status = PENDING;
          fuelSchedule1.schedulesSet = 1;
          fuelSchedule1.hasNextSchedule = false;
@@ -272,7 +245,6 @@ static inline void fuelSchedule2Interrupt() //Most ARM chips can simply call a f
        if(fuelSchedule2.hasNextSchedule == true)
        {
          FUEL2_COMPARE = fuelSchedule2.nextStartCompare;
-         fuelSchedule2.endCompare = fuelSchedule2.nextEndCompare;
          fuelSchedule2.Status = PENDING;
          fuelSchedule2.schedulesSet = 1;
          fuelSchedule2.hasNextSchedule = false;
@@ -309,7 +281,6 @@ static inline void fuelSchedule3Interrupt() //Most ARM chips can simply call a f
        if(fuelSchedule3.hasNextSchedule == true)
        {
          FUEL3_COMPARE = fuelSchedule3.nextStartCompare;
-         fuelSchedule3.endCompare = fuelSchedule3.nextEndCompare;
          fuelSchedule3.Status = PENDING;
          fuelSchedule3.schedulesSet = 1;
          fuelSchedule3.hasNextSchedule = false;
@@ -342,7 +313,6 @@ static inline void fuelSchedule4Interrupt() //Most ARM chips can simply call a f
        if(fuelSchedule4.hasNextSchedule == true)
        {
          FUEL4_COMPARE = fuelSchedule4.nextStartCompare;
-         fuelSchedule4.endCompare = fuelSchedule4.nextEndCompare;
          fuelSchedule4.Status = PENDING;
          fuelSchedule4.schedulesSet = 1;
          fuelSchedule4.hasNextSchedule = false;
@@ -362,7 +332,7 @@ static inline void fuelSchedule5Interrupt() //Most ARM chips can simply call a f
   {
     openInjector5();
     fuelSchedule5.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
-    FUEL5_COMPARE = fuelSchedule5.endCompare;
+    FUEL5_COMPARE = FUEL5_COUNTER + uS_TO_TIMER_COMPARE(fuelSchedule5.duration); //Doing this here prevents a potential overflow on restarts
   }
   else if (fuelSchedule5.Status == RUNNING)
   {
@@ -374,7 +344,6 @@ static inline void fuelSchedule5Interrupt() //Most ARM chips can simply call a f
      if(fuelSchedule5.hasNextSchedule == true)
      {
        FUEL5_COMPARE = fuelSchedule5.nextStartCompare;
-       fuelSchedule5.endCompare = fuelSchedule5.nextEndCompare;
        fuelSchedule5.Status = PENDING;
        fuelSchedule5.schedulesSet = 1;
        fuelSchedule5.hasNextSchedule = false;
@@ -396,7 +365,7 @@ static inline void fuelSchedule6Interrupt() //Most ARM chips can simply call a f
     //fuelSchedule4.StartCallback();
     openInjector6();
     fuelSchedule6.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
-    FUEL6_COMPARE = fuelSchedule6.endCompare;
+    FUEL6_COMPARE = FUEL6_COUNTER + uS_TO_TIMER_COMPARE(fuelSchedule6.duration); //Doing this here prevents a potential overflow on restarts
   }
   else if (fuelSchedule6.Status == RUNNING)
   {
@@ -409,7 +378,6 @@ static inline void fuelSchedule6Interrupt() //Most ARM chips can simply call a f
      if(fuelSchedule6.hasNextSchedule == true)
      {
        FUEL6_COMPARE = fuelSchedule6.nextStartCompare;
-       fuelSchedule6.endCompare = fuelSchedule6.nextEndCompare;
        fuelSchedule6.Status = PENDING;
        fuelSchedule6.schedulesSet = 1;
        fuelSchedule6.hasNextSchedule = false;
@@ -430,7 +398,7 @@ static inline void fuelSchedule7Interrupt() //Most ARM chips can simply call a f
   {
     openInjector7();
     fuelSchedule7.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
-    FUEL7_COMPARE = fuelSchedule7.endCompare;
+    FUEL7_COMPARE = FUEL7_COUNTER + uS_TO_TIMER_COMPARE(fuelSchedule7.duration); //Doing this here prevents a potential overflow on restarts
   }
   else if (fuelSchedule7.Status == RUNNING)
   {
@@ -442,7 +410,6 @@ static inline void fuelSchedule7Interrupt() //Most ARM chips can simply call a f
      if(fuelSchedule7.hasNextSchedule == true)
      {
        FUEL7_COMPARE = fuelSchedule7.nextStartCompare;
-       fuelSchedule7.endCompare = fuelSchedule7.nextEndCompare;
        fuelSchedule7.Status = PENDING;
        fuelSchedule7.schedulesSet = 1;
        fuelSchedule7.hasNextSchedule = false;
@@ -464,7 +431,7 @@ static inline void fuelSchedule8Interrupt() //Most ARM chips can simply call a f
     //fuelSchedule4.StartCallback();
     openInjector8();
     fuelSchedule8.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
-    FUEL8_COMPARE = fuelSchedule8.endCompare;
+    FUEL8_COMPARE = FUEL8_COUNTER + uS_TO_TIMER_COMPARE(fuelSchedule8.duration); //Doing this here prevents a potential overflow on restarts
   }
   else if (fuelSchedule8.Status == RUNNING)
   {
@@ -477,7 +444,6 @@ static inline void fuelSchedule8Interrupt() //Most ARM chips can simply call a f
      if(fuelSchedule8.hasNextSchedule == true)
      {
        FUEL8_COMPARE = fuelSchedule8.nextStartCompare;
-       fuelSchedule8.endCompare = fuelSchedule8.nextEndCompare;
        fuelSchedule8.Status = PENDING;
        fuelSchedule8.schedulesSet = 1;
        fuelSchedule8.hasNextSchedule = false;
@@ -580,7 +546,6 @@ static inline void ignitionSchedule3Interrupt() //Most ARM chips can simply call
        if(ignitionSchedule3.hasNextSchedule == true)
        {
          IGN3_COMPARE = ignitionSchedule3.nextStartCompare;
-         ignitionSchedule3.endCompare = ignitionSchedule3.nextEndCompare;
          ignitionSchedule3.Status = PENDING;
          ignitionSchedule3.schedulesSet = 1;
          ignitionSchedule3.hasNextSchedule = false;
@@ -607,7 +572,8 @@ static inline void ignitionSchedule4Interrupt() //Most ARM chips can simply call
       ignitionSchedule4.StartCallback();
       ignitionSchedule4.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
       ignitionSchedule4.startTime = micros();
-      IGN4_COMPARE = IGN4_COUNTER + uS_TO_TIMER_COMPARE(ignitionSchedule4.duration); //Doing this here prevents a potential overflow on restarts
+      if(ignitionSchedule4.endScheduleSetByDecoder == true) { IGN4_COMPARE = ignitionSchedule4.endCompare; } //If the decoder has set the end compare value, assign it to the next compare
+      else { IGN4_COMPARE = IGN4_COUNTER + uS_TO_TIMER_COMPARE(ignitionSchedule4.duration); } //If the decoder based timing isn't set, doing this here prevents a potential overflow that can occur at low RPMs
     }
     else if (ignitionSchedule4.Status == RUNNING)
     {
@@ -621,7 +587,6 @@ static inline void ignitionSchedule4Interrupt() //Most ARM chips can simply call
        if(ignitionSchedule4.hasNextSchedule == true)
        {
          IGN4_COMPARE = ignitionSchedule4.nextStartCompare;
-         ignitionSchedule4.endCompare = ignitionSchedule4.nextEndCompare;
          ignitionSchedule4.Status = PENDING;
          ignitionSchedule4.schedulesSet = 1;
          ignitionSchedule4.hasNextSchedule = false;
