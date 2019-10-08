@@ -132,8 +132,8 @@ void setFuelSchedule##n(unsigned long timeout, unsigned long duration){\
       interrupts();\
       FUEL##n##_TIMER_ENABLE();\
     } else {\
-      /*If the schedule is already running, we can set the next schedule so it is ready to go\
-       *This is required in cases of high rpm and high DC where there otherwise would not be enough time to set the schedule*/\
+      /*If the schedule is already running, we can set the next schedule so it is ready to go*/\
+      /*This is required in cases of high rpm and high DC where there otherwise would not be enough time to set the schedule*/\
       fuelSchedule##n.nextStartCompare = FUEL##n##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
       fuelSchedule##n.nextEndCompare = fuelSchedule##n.nextStartCompare + uS_TO_TIMER_COMPARE(duration);\
       fuelSchedule##n.hasNextSchedule = true;\
@@ -172,8 +172,8 @@ void setIgnitionSchedule##n(void (*startCallback)(), unsigned long timeout, unsi
       interrupts();\
       IGN##n##_TIMER_ENABLE();\
     } else {\
-      /*If the schedule is already running, we can set the next schedule so it is ready to go\
-       *This is required in cases of high rpm and high DC where there otherwise would not be enough time to set the schedule*/\
+      /*If the schedule is already running, we can set the next schedule so it is ready to go*/\
+      /*This is required in cases of high rpm and high DC where there otherwise would not be enough time to set the schedule*/\
       ignitionSchedule##n.nextStartCompare = IGN##n##_COUNTER + uS_TO_TIMER_COMPARE(timeout);\
       ignitionSchedule##n.nextEndCompare = ignitionSchedule##n.nextStartCompare + uS_TO_TIMER_COMPARE(duration);\
       ignitionSchedule##n.hasNextSchedule = true;\
