@@ -614,10 +614,8 @@ struct config2 {
   byte aseBins[4]; //Afterstart enrichment temp axis
   byte primePulse[4]; //Priming pulsewidth
   byte primeBins[4]; //Priming temp axis
-  byte unused2_91[36];
+  byte unused2_91[37];
 
-  byte RevLimiterMode:2;
-  byte unused2_127:6;
 #if defined(CORE_AVR)
   };
 #else
