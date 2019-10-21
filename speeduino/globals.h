@@ -998,68 +998,68 @@ struct config10 {
   } __attribute__((__packed__)); //The 32 bit systems require all structs to be fully packed
 #endif
 
-byte pinInjector1; //Output pin injector 1
-byte pinInjector2; //Output pin injector 2
-byte pinInjector3; //Output pin injector 3 is on
-byte pinInjector4; //Output pin injector 4 is on
-byte pinInjector5; //Output pin injector 5 NOT USED YET
-byte pinInjector6; //Placeholder only - NOT USED
-byte pinInjector7; //Placeholder only - NOT USED
-byte pinInjector8; //Placeholder only - NOT USED
-byte pinCoil1; //Pin for coil 1
-byte pinCoil2; //Pin for coil 2
-byte pinCoil3; //Pin for coil 3
-byte pinCoil4; //Pin for coil 4
-byte pinCoil5; //Pin for coil 5
-byte pinCoil6; //Pin for coil 6
-byte pinCoil7; //Pin for coil 7
-byte pinCoil8; //Pin for coil 8
-byte pinTrigger; //The CAS pin
-byte pinTrigger2; //The Cam Sensor pin
-byte pinTrigger3;	//the 2nd cam sensor pin
-byte pinTPS;//TPS input pin
-byte pinMAP; //MAP sensor pin
-byte pinEMAP; //EMAP sensor pin
-byte pinMAP2; //2nd MAP sensor (Currently unused)
-byte pinIAT; //IAT sensor pin
-byte pinCLT; //CLS sensor pin
-byte pinO2; //O2 Sensor pin
-byte pinO2_2; //second O2 pin
-byte pinBat; //Battery voltage pin
-byte pinDisplayReset; // OLED reset pin
-byte pinTachOut; //Tacho output
-byte pinFuelPump; //Fuel pump on/off
-byte pinIdle1; //Single wire idle control
-byte pinIdle2; //2 wire idle control (Not currently used)
-byte pinIdleUp; //Input for triggering Idle Up
-byte pinFuel2Input; //Input for switching to the 2nd fuel table
-byte pinSpareTemp1; // Future use only
-byte pinSpareTemp2; // Future use only
-byte pinSpareOut1; //Generic output
-byte pinSpareOut2; //Generic output
-byte pinSpareOut3; //Generic output
-byte pinSpareOut4; //Generic output
-byte pinSpareOut5; //Generic output
-byte pinSpareOut6; //Generic output
-byte pinSpareHOut1; //spare high current output
-byte pinSpareHOut2; // spare high current output
-byte pinSpareLOut1; // spare low current output
-byte pinSpareLOut2; // spare low current output
-byte pinSpareLOut3;
-byte pinSpareLOut4;
-byte pinSpareLOut5;
-byte pinBoost;
-byte pinVVT_1;		// vvt output 1
-byte pinVVT_2;		// vvt output 2
-byte pinFan;       // Cooling fan output
-byte pinStepperDir; //Direction pin for the stepper motor driver
-byte pinStepperStep; //Step pin for the stepper motor driver
-byte pinStepperEnable; //Turning the DRV8825 driver on/off
-byte pinLaunch;
-byte pinIgnBypass; //The pin used for an ignition bypass (Optional)
-byte pinFlex; //Pin with the flex sensor attached
-byte pinBaro; //Pin that an external barometric pressure sensor is attached to (If used)
-byte pinResetControl; // Output pin used control resetting the Arduino
+byte pinInjector1 = UNUSED_DIGITAL_PIN; //Output pin injector 1
+byte pinInjector2 = UNUSED_DIGITAL_PIN; //Output pin injector 2
+byte pinInjector3 = UNUSED_DIGITAL_PIN; //Output pin injector 3 is on
+byte pinInjector4 = UNUSED_DIGITAL_PIN; //Output pin injector 4 is on
+byte pinInjector5 = UNUSED_DIGITAL_PIN; //Output pin injector 5 NOT USED YET
+byte pinInjector6 = UNUSED_DIGITAL_PIN; //Placeholder only - NOT USED
+byte pinInjector7 = UNUSED_DIGITAL_PIN; //Placeholder only - NOT USED
+byte pinInjector8 = UNUSED_DIGITAL_PIN; //Placeholder only - NOT USED
+byte pinCoil1 = UNUSED_DIGITAL_PIN; //Pin for coil 1
+byte pinCoil2 = UNUSED_DIGITAL_PIN; //Pin for coil 2
+byte pinCoil3 = UNUSED_DIGITAL_PIN; //Pin for coil 3
+byte pinCoil4 = UNUSED_DIGITAL_PIN; //Pin for coil 4
+byte pinCoil5 = UNUSED_DIGITAL_PIN; //Pin for coil 5
+byte pinCoil6 = UNUSED_DIGITAL_PIN; //Pin for coil 6
+byte pinCoil7 = UNUSED_DIGITAL_PIN; //Pin for coil 7
+byte pinCoil8 = UNUSED_DIGITAL_PIN; //Pin for coil 8
+byte pinTrigger = UNUSED_DIGITAL_PIN; //The CAS pin
+byte pinTrigger2 = UNUSED_DIGITAL_PIN; //The Cam Sensor pin
+byte pinTrigger3 = UNUSED_DIGITAL_PIN;	//the 2nd cam sensor pin
+byte pinTPS = UNUSED_ANALOG_PIN;//TPS input pin
+byte pinMAP = UNUSED_ANALOG_PIN; //MAP sensor pin
+byte pinEMAP = UNUSED_ANALOG_PIN; //EMAP sensor pin
+byte pinMAP2 = UNUSED_ANALOG_PIN; //2nd MAP sensor (Currently unused)
+byte pinIAT = UNUSED_ANALOG_PIN; //IAT sensor pin
+byte pinCLT = UNUSED_ANALOG_PIN; //CLS sensor pin
+byte pinO2 = UNUSED_ANALOG_PIN; //O2 Sensor pin
+byte pinO2_2 = UNUSED_ANALOG_PIN; //second O2 pin
+byte pinBat = UNUSED_ANALOG_PIN; //Battery voltage pin
+byte pinDisplayReset = UNUSED_DIGITAL_PIN; // OLED reset pin
+byte pinTachOut = UNUSED_DIGITAL_PIN; //Tacho output
+byte pinFuelPump = UNUSED_DIGITAL_PIN; //Fuel pump on/off
+byte pinIdle1 = UNUSED_DIGITAL_PIN; //Single wire idle control
+byte pinIdle2 = UNUSED_DIGITAL_PIN; //2 wire idle control (Not currently used)
+byte pinIdleUp = UNUSED_DIGITAL_PIN; //Input for triggering Idle Up
+byte pinFuel2Input = UNUSED_DIGITAL_PIN; //Input for switching to the 2nd fuel table
+byte pinSpareTemp1 = UNUSED_DIGITAL_PIN; // Future use only
+byte pinSpareTemp2 = UNUSED_DIGITAL_PIN; // Future use only
+byte pinSpareOut1 = UNUSED_DIGITAL_PIN; //Generic output
+byte pinSpareOut2 = UNUSED_DIGITAL_PIN; //Generic output
+byte pinSpareOut3 = UNUSED_DIGITAL_PIN; //Generic output
+byte pinSpareOut4 = UNUSED_DIGITAL_PIN; //Generic output
+byte pinSpareOut5 = UNUSED_DIGITAL_PIN; //Generic output
+byte pinSpareOut6 = UNUSED_DIGITAL_PIN; //Generic output
+byte pinSpareHOut1 = UNUSED_DIGITAL_PIN; //spare high current output
+byte pinSpareHOut2 = UNUSED_DIGITAL_PIN; // spare high current output
+byte pinSpareLOut1 = UNUSED_DIGITAL_PIN; // spare low current output
+byte pinSpareLOut2 = UNUSED_DIGITAL_PIN; // spare low current output
+byte pinSpareLOut3 = UNUSED_DIGITAL_PIN;
+byte pinSpareLOut4 = UNUSED_DIGITAL_PIN;
+byte pinSpareLOut5 = UNUSED_DIGITAL_PIN;
+byte pinBoost = UNUSED_DIGITAL_PIN;
+byte pinVVT_1 = UNUSED_DIGITAL_PIN;		// vvt output 1
+byte pinVVT_2 = UNUSED_DIGITAL_PIN;		// vvt output 2
+byte pinFan = UNUSED_DIGITAL_PIN;       // Cooling fan output
+byte pinStepperDir = UNUSED_DIGITAL_PIN; //Direction pin for the stepper motor driver
+byte pinStepperStep = UNUSED_DIGITAL_PIN; //Step pin for the stepper motor driver
+byte pinStepperEnable = UNUSED_DIGITAL_PIN; //Turning the DRV8825 driver on/off
+byte pinLaunch = UNUSED_DIGITAL_PIN;
+byte pinIgnBypass = UNUSED_DIGITAL_PIN; //The pin used for an ignition bypass (Optional)
+byte pinFlex = UNUSED_DIGITAL_PIN; //Pin with the flex sensor attached
+byte pinBaro = UNUSED_DIGITAL_PIN; //Pin that an external barometric pressure sensor is attached to (If used)
+byte pinResetControl = UNUSED_DIGITAL_PIN; // Output pin used control resetting the Arduino
 byte pinEngineCheck = UNUSED_DIGITAL_PIN;
 
 /* global variables */ // from speeduino.ino
