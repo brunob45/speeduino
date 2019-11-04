@@ -538,7 +538,7 @@ static inline void idleInterrupt() //Most ARM chips can simply call a function
   }
 }
 
-#if defined(CORE_TEENSY35)
+#if defined(CORE_TEENSY35) || defined(CORE_TEENSY32)
 void ftm2_isr(void)
 { 
   //FTM2 only has 2 compare channels

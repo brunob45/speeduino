@@ -1,4 +1,4 @@
-#if defined(__MK20DX256__) // teensy 3.2
+#if defined(CORE_TEENSY32) // teensy 3.2
 #include "board_teensy32.h"
 #include "globals.h"
 #include "auxiliaries.h"

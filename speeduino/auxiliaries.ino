@@ -389,7 +389,7 @@ void boostDisable()
   }
 }
 
-#if defined(CORE_TEENSY35)
+#if defined(CORE_TEENSY35) || defined(CORE_TEENSY32)
 void ftm1_isr(void)
 {
   //FTM1 only has 2 compare channels

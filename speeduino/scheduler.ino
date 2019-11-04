@@ -1242,7 +1242,7 @@ static inline void ignitionSchedule8Interrupt() //Most ARM chips can simply call
 #endif
 
 
-#if defined(CORE_TEENSY35)
+#if defined(CORE_TEENSY35) || defined(CORE_TEENSY32)
 void ftm0_isr(void)
 {
   //Use separate variables for each test to ensure conversion to bool
