@@ -887,8 +887,8 @@ void setPinMapping(byte boardID)
     pinTrigger2 = 9;
     pinTPS = A2;
     pinMAP = A0;
-    pinIAT = A1;
-    pinCLT = A14;
+    pinIAT = A14;
+    pinCLT = A1;
     pinO2 = A10;
     pinBat = A3;
     pinFuelPump = 21;
