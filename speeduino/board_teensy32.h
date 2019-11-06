@@ -100,10 +100,7 @@
   #define IGN8_TIMER_DISABLE() ;
 
   #define MAX_TIMER_PERIOD 130321 // 3.555555uS * 65535
-  #define MAX_TIMER_PERIOD_SLOW 130321
   #define uS_TO_TIMER_COMPARE(uS) ((uS * 9) >> 5) //Converts a given number of uS into the required number of timer ticks until that time has passed.
-  //Hack compatibility with AVR timers that run at different speeds
-  #define uS_TO_TIMER_COMPARE_SLOW(uS) ((uS * 9) >> 5)
 
 /*
 ***********************************************************************************************************
