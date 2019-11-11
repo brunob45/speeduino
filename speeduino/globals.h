@@ -254,6 +254,9 @@
 
 #define MAX_RPM 18000 //This is the maximum rpm that the ECU will attempt to run at. It is NOT related to the rev limiter, but is instead dictates how fast certain operations will be allowed to run. Lower number gives better performance
 
+#define BATTV_COR_MODE_WHOLE 0
+#define BATTV_COR_MODE_OPENTIME 1
+
 //Table sizes
 #define CALIBRATION_TABLE_SIZE 512
 #define CALIBRATION_TEMPERATURE_OFFSET 40 // All temperature measurements are stored offset by 40 degrees. This is so we can use an unsigned byte (0-255) to represent temperature ranges from -40 to 215
@@ -295,7 +298,8 @@ struct table2D injectorVCorrectionTable; //6 bin injector voltage correction (2D
 struct table2D IATDensityCorrectionTable; //9 bin inlet air temperature density correction (2D)
 struct table2D baroFuelTable; //8 bin baro correction curve (2D)
 struct table2D IATRetardTable; //6 bin ignition adjustment based on inlet air temperature  (2D)
-struct table2D IDLEAdvanceTable; //6 bin idle advance adjustment table based on RPM difference  (2D)
+struct table2D idleTargetTable; //10 bin idle target table for idle timing (2D)
+struct table2D idleAdvanceTable; //6 bin idle advance adjustment table based on RPM difference  (2D)
 struct table2D CLTAdvanceTable; //6 bin ignition adjustment based on coolant temperature  (2D)
 struct table2D rotarySplitTable; //8 bin ignition split curve for rotary leading/trailing  (2D)
 struct table2D flexFuelTable;  //6 bin flex fuel correction table for fuel adjustments (2D)
@@ -449,6 +453,7 @@ struct statuses {
   byte idleDuty; /**< The current idle duty cycle amount if PWM idle is selected and active */
   byte CLIdleTarget; /**< The target idle RPM (when closed loop idle control is active) */
   bool idleUpActive; /**< Whether the externally controlled idle up is currently active */
+  bool CTPSActive; /**< Whether the externally controlled closed throttle position sensor is currently active */
   bool fanOn; /**< Whether or not the fan is turned on */
   volatile byte ethanolPct; /**< Ethanol reading (if enabled). 0 = No ethanol, 100 = pure ethanol. Eg E85 = 85. */
   unsigned long AEEndTime; /**< The target end time used whenever AE is turned on */
@@ -515,7 +520,8 @@ struct config2 {
   byte unused2_1;
   byte unused2_2;  //Was ASE
   byte aeMode : 2; /**< Acceleration Enrichment mode. 0 = TPS, 1 = MAP. Values 2 and 3 reserved for potential future use (ie blended TPS / MAP) */
-  byte unused1_3c : 6;
+  byte battVCorMode : 1;
+  byte unused1_3c : 5;
   byte wueValues[10]; //Warm up enrichment array (10 bytes)
   byte crankingPct; //Cranking enrichment
   byte pinMapping; // The board / ping mapping to be used
@@ -614,7 +620,16 @@ struct config2 {
   byte aseBins[4]; //Afterstart enrichment temp axis
   byte primePulse[4]; //Priming pulsewidth
   byte primeBins[4]; //Priming temp axis
-  byte unused2_91[37];
+
+  byte CTPSPin : 6;
+  byte CTPSPolarity : 1;
+  byte CTPSEnabled : 1;
+  byte idleAdvEnabled : 2;
+  byte idleAdvAlgorithm : 1;
+  byte IdleAdvDelay : 5;
+  byte idleAdvRPM;
+  byte idleAdvTPS;
+  byte unused2_95[33];
 
 #if defined(CORE_AVR)
   };
@@ -699,7 +714,10 @@ struct config4 {
   byte baroFuelBins[8];
   byte baroFuelValues[8];
 
-  byte unused2_91[20];
+  byte idleAdvBins[6];
+  byte idleAdvValues[6];
+
+  byte unused4_120[8];
 
 #if defined(CORE_AVR)
   };
@@ -1032,6 +1050,7 @@ byte pinFuelPump = UNUSED_DIGITAL_PIN; //Fuel pump on/off
 byte pinIdle1 = UNUSED_DIGITAL_PIN; //Single wire idle control
 byte pinIdle2 = UNUSED_DIGITAL_PIN; //2 wire idle control (Not currently used)
 byte pinIdleUp = UNUSED_DIGITAL_PIN; //Input for triggering Idle Up
+byte pinCTPS = UNUSED_DIGITAL_PIN; //Input for triggering closed throttle state
 byte pinFuel2Input = UNUSED_DIGITAL_PIN; //Input for switching to the 2nd fuel table
 byte pinSpareTemp1 = UNUSED_DIGITAL_PIN; // Future use only
 byte pinSpareTemp2 = UNUSED_DIGITAL_PIN; // Future use only
