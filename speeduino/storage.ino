@@ -72,8 +72,6 @@ void writeConfig(byte tableNum)
         offset = x - EEPROM_CONFIG1_YBINS;
         EEPROM.update(x, fuelTable.axisY[offset] / TABLE_LOAD_MULTIPLIER); //Table load is divided by 2 (Allows for MAP up to 511)
       }
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
       break;
       //That concludes the writing of the VE table
 
@@ -87,10 +85,6 @@ void writeConfig(byte tableNum)
       {
         if(EEPROM.read(x) != *(pnt_configPage + byte(x - EEPROM_CONFIG2_START))) { EEPROM.write(x, *(pnt_configPage + byte(x - EEPROM_CONFIG2_START))); writeCounter++; }
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case ignMapPage:
@@ -122,10 +116,6 @@ void writeConfig(byte tableNum)
         newVal = ignitionTable.axisY[offset]/TABLE_LOAD_MULTIPLIER;
         if(EEPROM.read(x) != newVal) { EEPROM.write(x, newVal); writeCounter++; } //Table load is divided by 2 (Allows for MAP up to 511)
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case ignSetPage:
@@ -138,10 +128,6 @@ void writeConfig(byte tableNum)
       {
         if(EEPROM.read(x) != *(pnt_configPage + byte(x - EEPROM_CONFIG4_START))) { EEPROM.write(x, *(pnt_configPage + byte(x - EEPROM_CONFIG4_START))); writeCounter++; }
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case afrMapPage:
@@ -170,10 +156,6 @@ void writeConfig(byte tableNum)
         offset = x - EEPROM_CONFIG5_YBINS;
         EEPROM.update(x, afrTable.axisY[offset]/TABLE_LOAD_MULTIPLIER); //Table load is divided by 2 (Allows for MAP up to 511)
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case afrSetPage:
@@ -186,10 +168,6 @@ void writeConfig(byte tableNum)
       {
         if(EEPROM.read(x) != *(pnt_configPage + byte(x - EEPROM_CONFIG6_START))) { EEPROM.write(x, *(pnt_configPage + byte(x - EEPROM_CONFIG6_START))); writeCounter++; }
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case boostvvtPage:
@@ -246,10 +224,6 @@ void writeConfig(byte tableNum)
         y++;
         z++;
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case seqFuelPage:
@@ -329,9 +303,6 @@ void writeConfig(byte tableNum)
         z++;
         i++;
       }
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case canbusPage:
@@ -344,10 +315,6 @@ void writeConfig(byte tableNum)
       {
         if(EEPROM.read(x) != *(pnt_configPage + byte(x - EEPROM_CONFIG9_START))) { EEPROM.write(x, *(pnt_configPage + byte(x - EEPROM_CONFIG9_START))); writeCounter++; }
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case warmupPage:
@@ -361,10 +328,6 @@ void writeConfig(byte tableNum)
       {
         if(EEPROM.read(x) != *(pnt_configPage + byte(x - EEPROM_CONFIG10_START))) { EEPROM.write(x, *(pnt_configPage + byte(x - EEPROM_CONFIG10_START))); writeCounter++; }
       }
-
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
-
       break;
 
     case fuelMap2Page:
@@ -392,8 +355,6 @@ void writeConfig(byte tableNum)
         offset = x - EEPROM_CONFIG11_YBINS;
         EEPROM.update(x, fuelTable2.axisY[offset] / TABLE_LOAD_MULTIPLIER); //Table load is divided by 2 (Allows for MAP up to 511)
       }
-      if(writeCounter > EEPROM_MAX_WRITE_BLOCK) { eepromWritesPending = true; }
-      else { eepromWritesPending = false; }
       break;
       //That concludes the writing of the 2nd fuel table
 

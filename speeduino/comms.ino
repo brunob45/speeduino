@@ -107,6 +107,7 @@ void command(Stream& mySerial)
     case 'H': //Start the tooth logger
       currentStatus.toothLogEnabled = true;
       currentStatus.compositeLogEnabled = false; //Safety first (Should never be required)
+      BIT_CLEAR(currentStatus.status1, BIT_STATUS1_TOOTHLOG1READY);
       toothHistoryIndex = 0;
       toothHistorySerialIndex = 0;
 
@@ -134,6 +135,7 @@ void command(Stream& mySerial)
     case 'J': //Start the composite logger
       currentStatus.compositeLogEnabled = true;
       currentStatus.toothLogEnabled = false; //Safety first (Should never be required)
+      BIT_CLEAR(currentStatus.status1, BIT_STATUS1_TOOTHLOG1READY);
       toothHistoryIndex = 0;
       toothHistorySerialIndex = 0;
       compositeLastToothTime = 0;
@@ -237,7 +239,7 @@ void command(Stream& mySerial)
       break;
 
     case 'Q': // send code version
-      mySerial.print(F("speeduino 201911"));
+      mySerial.print(F("speeduino 201912-dev"));
       break;
 
     case 'r': //New format for the optimised OutputChannels
@@ -267,13 +269,32 @@ void command(Stream& mySerial)
       break;
 
     case 'S': // send code version
-      mySerial.print(F("Speeduino 2019.11"));
+      mySerial.print(F("Speeduino 2019.12-dev"));
       currentStatus.secl = 0; //This is required in TS3 due to its stricter timings
       break;
 
     case 'T': //Send 256 tooth log entries to Tuner Studios tooth logger
-      if(currentStatus.toothLogEnabled == true) { sendToothLog(mySerial); } //Sends tooth log values as ints
-      else if (currentStatus.compositeLogEnabled == true) { sendCompositeLog(mySerial); }
+      //6 bytes required:
+      //2 - Page identifier
+      //2 - offset
+      //2 - Length
+      cmdPending = true;
+      if(mySerial.available() >= 6)
+      {
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+        mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
+
+        if(currentStatus.toothLogEnabled == true) { sendToothLog(); } //Sends tooth log values as ints
+        else if (currentStatus.compositeLogEnabled == true) { sendCompositeLog(); }
+
+        cmdPending = false;
+      }
+
+      
 
       break;
 
@@ -1127,7 +1148,7 @@ void sendPageASCII(Stream& mySerial)
     case veSetPage:
       uint16_t* pnt16_configPage;
       // To Display Values from Config Page 1
-      // When casting to the __FlashStringHelper type Serial.println uses the same subroutine as when using the F macro
+      // When casting to the __FlashStringHelper type mySerial.println uses the same subroutine as when using the F macro
       mySerial.println((const __FlashStringHelper *)&pageTitles[27]);//27 is the index to the first char in the second sting in pageTitles
       // The following loop displays in human readable form of all byte values in config page 1 up to but not including the first array.
       // incrementing void pointers is cumbersome. Thus we have "pnt_configPage = (byte *)pnt_configPage + 1"
@@ -1733,7 +1754,15 @@ void sendToothLog(Stream& mySerial)
       BIT_CLEAR(currentStatus.status1, BIT_STATUS1_TOOTHLOG1READY);
       cmdPending = false;
   }
-  else { cmdPending = true; } //Mark this request as being incomplete. 
+  else 
+  { 
+    //TunerStudio has timed out, send a LOG of all 0s
+    for(int x = 0; x < (4*TOOTH_LOG_SIZE); x++)
+    {
+      mySerial.write(0);
+    }
+    cmdPending = false; 
+  } 
 }
 
 void sendCompositeLog(Stream& mySerial)
@@ -1755,17 +1784,26 @@ void sendCompositeLog(Stream& mySerial)
         //mySerial.write(highByte(toothHistory[toothHistorySerialIndex]));
         //mySerial.write(lowByte(toothHistory[toothHistorySerialIndex]));
 
-        mySerial.write(compositeLogHistory[toothHistorySerialIndex]); //The status byte (Indicates which)
-
-        
+        mySerial.write(compositeLogHistory[toothHistorySerialIndex]); //The status byte (Indicates the trigger edge, whether it was a pri/sec pulse, the sync status)
 
         if(toothHistorySerialIndex == (TOOTH_LOG_BUFFER-1)) { toothHistorySerialIndex = 0; }
         else { toothHistorySerialIndex++; }
       }
       BIT_CLEAR(currentStatus.status1, BIT_STATUS1_TOOTHLOG1READY);
+      toothHistoryIndex = 0;
+      toothHistorySerialIndex = 0;
+      compositeLastToothTime = 0;
       cmdPending = false;
   }
-  else { cmdPending = true; } //Mark this request as being incomplete. 
+  else 
+  { 
+    //TunerStudio has timed out, send a LOG of all 0s
+    for(int x = 0; x < (5*TOOTH_LOG_SIZE); x++)
+    {
+      mySerial.write(0);
+    }
+    cmdPending = false; 
+  } 
 }
 
 void testComm(Stream& mySerial)
