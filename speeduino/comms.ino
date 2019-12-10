@@ -288,8 +288,8 @@ void command(Stream& mySerial)
         mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
         mySerial.read(); // First byte of the page identifier can be ignored. It's always 0
 
-        if(currentStatus.toothLogEnabled == true) { sendToothLog(); } //Sends tooth log values as ints
-        else if (currentStatus.compositeLogEnabled == true) { sendCompositeLog(); }
+        if(currentStatus.toothLogEnabled == true) { sendToothLog(mySerial); } //Sends tooth log values as ints
+        else if (currentStatus.compositeLogEnabled == true) { sendCompositeLog(mySerial); }
 
         cmdPending = false;
       }
@@ -1759,7 +1759,7 @@ void sendToothLog(Stream& mySerial)
     //TunerStudio has timed out, send a LOG of all 0s
     for(int x = 0; x < (4*TOOTH_LOG_SIZE); x++)
     {
-      mySerial.write(0);
+      mySerial.write((uint8_t)0);
     }
     cmdPending = false; 
   } 
@@ -1800,7 +1800,7 @@ void sendCompositeLog(Stream& mySerial)
     //TunerStudio has timed out, send a LOG of all 0s
     for(int x = 0; x < (5*TOOTH_LOG_SIZE); x++)
     {
-      mySerial.write(0);
+      mySerial.write((uint8_t)0);
     }
     cmdPending = false; 
   } 
