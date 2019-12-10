@@ -1000,6 +1000,179 @@ void triggerSetup_4G63()
   secondaryLastToothTime = 0;
 }
 
+// #define PERCENT_OF_N(p, n) ( ( (n) * (uint8_t)((p)/6.25) ) >> 4 )
+#define PERCENT_OF_N(p, n) ( ( (n) * (uint8_t)((p)/3.125) ) >> 5 )
+#define PERCENT_OF_N_FROM_X(p, n, x) ( (p) * (n) / (x) )
+
+void apply_4G63_filter()
+{
+  if(toothCurrentCount & 1)
+  {
+    triggerToothAngle = 70;
+  }
+  else if(configPage2.nCylinders == 4)
+  {
+    triggerToothAngle = 110;
+  }
+  else
+  {
+    triggerToothAngle = 50;
+  }
+
+  //Whilst this is an uneven tooth pattern, if the specific angle between the last 2 teeth is specified, 1st deriv prediction can be used
+  if(configPage4.triggerFilter == 0)
+  {
+    //trigger filter is turned off.
+    triggerFilterTime = 0;
+  }
+  else if(configPage2.nCylinders == 4)
+  {
+    if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
+    {
+      //Lite filter
+      if(toothCurrentCount & 1)
+      {
+        triggerFilterTime = PERCENT_OF_N(65*110/70, curGap); // curGap;
+      }
+      else
+      {
+        triggerFilterTime = PERCENT_OF_N(65*70/110, curGap); // (curGap * 3) >> 3;
+      }
+    }
+    else if(configPage4.triggerFilter == 2)
+    {
+      //Medium filter level
+      if(toothCurrentCount & 1)
+      {
+        triggerFilterTime = PERCENT_OF_N(80*110/70, curGap); // (curGap * 5) >> 2;
+      }
+      else
+      {
+        triggerFilterTime = PERCENT_OF_N(80*70/110, curGap); // (curGap >> 1);
+      }
+    }
+    else // if (configPage4.triggerFilter == 3)
+      {
+      //Aggressive filter level
+      if(toothCurrentCount & 1)
+      {
+        triggerFilterTime = PERCENT_OF_N(90*110/70, curGap); // (curGap * 11) >> 3;
+      }
+      else
+      {
+        triggerFilterTime = PERCENT_OF_N(90*70/110, curGap); // (curGap * 9) >> 4;
+      }
+    }
+  }
+  else // if(configPage2.nCylinders == 6)
+  {
+    if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
+    {
+      //Lite filter
+      if(toothCurrentCount & 1)
+      {
+        triggerFilterTime = PERCENT_OF_N(65*50/70, curGap); // (curGap >> 2);
+      }
+      else
+      {
+        triggerFilterTime = PERCENT_OF_N(65*70/50, curGap); // curGap >> 1;
+      }
+    }
+    else if(configPage4.triggerFilter == 2)
+    {
+      //Medium filter level
+      if(toothCurrentCount & 1)
+      {
+        triggerFilterTime = PERCENT_OF_N(80*50/70, curGap); // (curGap * 3) >> 3 ;
+      }
+      else
+      {
+        triggerFilterTime = PERCENT_OF_N(80*70/50, curGap); // (curGap * 3) >> 2;
+      }
+    }
+    else // if (configPage4.triggerFilter == 3)
+    {
+      //Aggressive filter level
+      if(toothCurrentCount & 1)
+      {
+        triggerFilterTime = PERCENT_OF_N(90*50/70, curGap); // curGap >> 1 ;
+      }
+      else
+      {
+        triggerFilterTime = PERCENT_OF_N(90*70/50, curGap); // curGap;
+      }
+    }
+  }
+}
+
+enum TriggerStatusEnum { TRIG_NONE, TRIG1_RISING, TRIG1_FALLING, TRIG2_RISING, TRIG2_FALLING };
+
+void decode_4G63_tooth(const uint8_t& currentTrigger)
+{
+  static uint8_t lastTrigger = TRIG_NONE;
+  if(currentTrigger == TRIG1_FALLING)
+  {
+    if(lastTrigger == TRIG2_FALLING)
+    {
+      toothCurrentCount = 5-4;
+      currentStatus.hasSync = true;
+    }
+  }
+  else if(currentTrigger == TRIG1_RISING)
+  {
+    if(lastTrigger == TRIG2_FALLING)
+    {
+      toothCurrentCount = 2+4;
+      currentStatus.hasSync = true;
+    }
+    else if (lastTrigger == TRIG1_FALLING)
+    {
+      toothCurrentCount = 6-4;
+      currentStatus.hasSync = true;
+    }
+  }
+  else if(currentTrigger == TRIG2_FALLING)
+  {
+    // Cannot gain sync from trigger2.
+    if(lastTrigger == TRIG1_FALLING)
+    {
+      toothCurrentCount = 1+4;
+      // currentStatus.hasSync = true;
+    }
+    else if(lastTrigger == TRIG1_RISING)
+    {
+      toothCurrentCount = 4+4;
+      // currentStatus.hasSync = true;
+    }
+  }
+  lastTrigger = currentTrigger;
+}
+
+void decode_6G72_tooth(const uint8_t& currentTrigger)
+{
+  static uint8_t lastTrigger = TRIG_NONE;
+  if(currentTrigger == TRIG1_FALLING)
+  {
+    if(lastTrigger == TRIG2_FALLING)
+    {
+      toothCurrentCount = 2;
+      currentStatus.hasSync = true;
+    }
+    //Else, cannot gain sync for 6 cylinder here.
+  }
+  else if(currentTrigger == TRIG2_FALLING)
+  {
+    // Cannot gain sync from trigger2.
+    if(lastTrigger == TRIG1_RISING)
+    {
+      toothCurrentCount = 7;
+      // currentStatus.hasSync = true;
+    }
+    //Else, cannot gain sync for 6 cylinder here.
+  }
+  lastTrigger = currentTrigger;
+}
+
 void triggerPri_4G63()
 {
   curTime = micros();
@@ -1032,7 +1205,7 @@ void triggerPri_4G63()
           if( (toothCurrentCount == 1) || (toothCurrentCount == 5) ) { endCoil1Charge(); endCoil3Charge(); }
           else if( (toothCurrentCount == 3) || (toothCurrentCount == 7) ) { endCoil2Charge(); endCoil4Charge(); }
         }
-        else if(configPage2.nCylinders == 6)
+        else // if(configPage2.nCylinders == 6)
         {
           if( (toothCurrentCount == 1) || (toothCurrentCount == 7) ) { endCoil1Charge(); }
           else if( (toothCurrentCount == 3) || (toothCurrentCount == 9) ) { endCoil2Charge(); }
@@ -1040,110 +1213,7 @@ void triggerPri_4G63()
         }
       }
 
-      //Whilst this is an uneven tooth pattern, if the specific angle between the last 2 teeth is specified, 1st deriv prediction can be used
-      if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
-      {
-        //Lite filter
-        if( (toothCurrentCount == 1) || (toothCurrentCount == 3) || (toothCurrentCount == 5) || (toothCurrentCount == 7) || (toothCurrentCount == 9) || (toothCurrentCount == 11) )
-        {
-          if(configPage2.nCylinders == 4)
-          {
-            triggerToothAngle = 70;
-            triggerFilterTime = curGap; //Trigger filter is set to whatever time it took to do 70 degrees (Next trigger is 110 degrees away)
-          }
-          else if(configPage2.nCylinders == 6)
-          {
-            triggerToothAngle = 70;
-            triggerFilterTime = (curGap >> 2); //Trigger filter is set to (70/4)=17.5=17 degrees (Next trigger is 50 degrees away).
-          }
-        }
-        else
-        {
-          if(configPage2.nCylinders == 4)
-          {
-            triggerToothAngle = 110;
-            triggerFilterTime = (curGap * 3) >> 3; //Trigger filter is set to (110*3)/8=41.25=41 degrees (Next trigger is 70 degrees away).
-          }
-          else if(configPage2.nCylinders == 6)
-          {
-            triggerToothAngle = 50;
-            triggerFilterTime = curGap >> 1; //Trigger filter is set to 25 degrees (Next trigger is 70 degrees away).
-          }
-        }
-      }
-      else if(configPage4.triggerFilter == 2)
-      {
-        //Medium filter level
-        if( (toothCurrentCount == 1) || (toothCurrentCount == 3) || (toothCurrentCount == 5) || (toothCurrentCount == 7) || (toothCurrentCount == 9) || (toothCurrentCount == 11) )
-        { 
-          triggerToothAngle = 70; 
-          if(configPage2.nCylinders == 4)
-          { 
-            triggerFilterTime = (curGap * 5) >> 2 ; //87.5 degrees with a target of 110
-          }
-          else
-          {
-            triggerFilterTime = curGap >> 1 ; //35 degrees with a target of 50
-          }
-        } 
-        else 
-        { 
-          if(configPage2.nCylinders == 4)
-          { 
-            triggerToothAngle = 110; 
-            triggerFilterTime = (curGap >> 1); //55 degrees with a target of 70
-          }
-          else
-          {
-            triggerToothAngle = 50; 
-            triggerFilterTime = (curGap * 3) >> 2; //Trigger filter is set to (50*3)/4=37.5=37 degrees (Next trigger is 70 degrees away).
-          }
-        } 
-      }
-      else if (configPage4.triggerFilter == 3)
-      {
-        //Aggressive filter level
-        if( (toothCurrentCount == 1) || (toothCurrentCount == 3) || (toothCurrentCount == 5) || (toothCurrentCount == 7) || (toothCurrentCount == 9) || (toothCurrentCount == 11) )
-        { 
-          triggerToothAngle = 70; 
-          if(configPage2.nCylinders == 4)
-          { 
-            triggerFilterTime = (curGap * 11) >> 3;//96.26 degrees with a target of 110
-          }
-          else
-          {
-            triggerFilterTime = curGap >> 1 ; //35 degrees with a target of 50
-          }
-        } 
-        else 
-        { 
-          if(configPage2.nCylinders == 4)
-          { 
-            triggerToothAngle = 110; 
-            triggerFilterTime = (curGap * 9) >> 5; //61.87 degrees with a target of 70
-          }
-          else
-          {
-            triggerToothAngle = 50; 
-            triggerFilterTime = curGap; //50 degrees with a target of 70
-          }
-        } 
-      }
-      else
-      {
-        //trigger filter is turned off.
-        triggerFilterTime = 0;
-        if( (toothCurrentCount == 1) || (toothCurrentCount == 3) || (toothCurrentCount == 5) || (toothCurrentCount == 7) || (toothCurrentCount == 9) || (toothCurrentCount == 11) )
-        { 
-          if(configPage2.nCylinders == 4) { triggerToothAngle = 70; }
-          else  { triggerToothAngle = 70; }
-        } 
-        else 
-        { 
-          if(configPage2.nCylinders == 4) { triggerToothAngle = 110; }
-          else  { triggerToothAngle = 50; }
-        }
-      }
+      apply_4G63_filter();
 
       //EXPERIMENTAL!
       //New ignition mode is ONLY available on 4g63 when the trigger angle is set to the stock value of 0.
@@ -1153,7 +1223,7 @@ void triggerPri_4G63()
         {
           uint16_t crankAngle = ignitionLimits( toothAngles[(toothCurrentCount-1)] );
 
-          //Handle non-sequential tooth counts 
+          //Handle non-sequential tooth counts
           if( (configPage4.sparkMode != IGN_MODE_SEQUENTIAL) && (toothCurrentCount > configPage2.nCylinders) ) { checkPerToothTiming(crankAngle, (toothCurrentCount-configPage2.nCylinders) ); }
           else { checkPerToothTiming(crankAngle, toothCurrentCount); }
         }
@@ -1163,27 +1233,9 @@ void triggerPri_4G63()
     {
       triggerSecFilterTime = 0;
       //New secondary method of determining sync
-      if(READ_PRI_TRIGGER() == true)
-      {
-        if(READ_SEC_TRIGGER() == true) { revolutionOne = true; }
-        else { revolutionOne = false; }
-      }
-      else
-      {
-        if( (READ_SEC_TRIGGER() == false) && (revolutionOne == true) ) 
-        { 
-          //Crank is low, cam is low and the crank pulse STARTED when the cam was high. 
-          if(configPage2.nCylinders == 4) { toothCurrentCount = 1; } //Means we're at 5* BTDC on a 4G63 4 cylinder
-          //else if(configPage2.nCylinders == 6) { toothCurrentCount = 8; } 
-        } 
-        //If sequential is ever enabled, the below toothCurrentCount will need to change:
-        else if( (READ_SEC_TRIGGER() == true) && (revolutionOne == true) ) 
-        { 
-          //Crank is low, cam is high and the crank pulse STARTED when the cam was high. 
-          if(configPage2.nCylinders == 4) { toothCurrentCount = 5; } //Means we're at 5* BTDC on a 4G63 4 cylinder
-          else if(configPage2.nCylinders == 6) { toothCurrentCount = 2; currentStatus.hasSync = true; } //Means we're at 45* ATDC on 6G72 6 cylinder
-        } 
-      }
+      const TriggerStatusEnum currentTrigger = READ_PRI_TRIGGER() ? TRIG1_RISING : TRIG1_FALLING;
+      if(configPage2.nCylinders == 4) { decode_4G63_tooth(currentTrigger); }
+      else { decode_6G72_tooth(currentTrigger); }
     }
   } //Filter time
 
@@ -1209,7 +1261,7 @@ void triggerSec_4G63()
     validTrigger = true; //Flag that this pulse was accepted as a valid trigger
     //addToothLogEntry(curGap, TOOTH_CAM);
 
-    triggerSecFilterTime = curGap2 >> 1; //Basic 50% filter for the secondary reading
+    triggerSecFilterTime = PERCENT_OF_N(50, curGap2); //Basic 50% filter for the secondary reading
     //More aggressive options:
     //62.5%:
     //triggerSecFilterTime = (curGap2 * 9) >> 5;
@@ -1222,27 +1274,26 @@ void triggerSec_4G63()
 
       triggerFilterTime = 1500; //If this is removed, can have trouble getting sync again after the engine is turned off (but ECU not reset).
       triggerSecFilterTime = triggerSecFilterTime >> 1; //Divide the secondary filter time by 2 again, making it 25%. Only needed when cranking
-      if(READ_PRI_TRIGGER() == true)
-      {
-        if(configPage2.nCylinders == 4)
-        { 
-          if(toothCurrentCount == 8) { currentStatus.hasSync = true; } //Is 8 for sequential, was 4
-        }
-        else if(configPage2.nCylinders == 6) 
-        { 
-          if(toothCurrentCount == 7) { currentStatus.hasSync = true; }
-        }
-
-      }
-      else
-      {
-        if(configPage2.nCylinders == 4)
-        { 
-          if(toothCurrentCount == 5) { currentStatus.hasSync = true; } //Is 5 for sequential, was 1
-        }
-        //Cannot gain sync for 6 cylinder here. 
-      }
+      if(configPage2.nCylinders == 4) { decode_4G63_tooth(TRIG2_FALLING); }
+      else { decode_6G72_tooth(TRIG2_FALLING); }
     }
+    else if(false)
+    {
+      if ( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) || (configPage4.useResync == 1) )
+      {
+        if(configPage2.nCylinders == 4)
+        {
+          if(READ_PRI_TRIGGER() == true) { currentStatus.hasSync &= (toothCurrentCount == 4); }
+          else { currentStatus.hasSync &= (toothCurrentCount == 1); }
+        }
+        else // if(configPage2.nCylinders == 6)
+        {
+          currentStatus.hasSync &= ( (READ_PRI_TRIGGER() == true) && (toothCurrentCount == 7) );
+          // Else, cannot check sync for 6 cylinder here.
+        }
+        if(!currentStatus.hasSync) { currentStatus.syncLossCounter++; }
+      } // Use resync or cranking
+    } // Has sync
 
     //if ( (micros() - secondaryLastToothTime1) < triggerSecFilterTime_duration && configPage2.useResync )
     if ( (currentStatus.RPM < currentStatus.crankRPM) || (configPage4.useResync == 1) )
@@ -1253,15 +1304,15 @@ void triggerSec_4G63()
         if(READ_PRI_TRIGGER() == true)
         {
           //Whilst we're cranking and have sync, we need to watch for noise pulses.
-          if(toothCurrentCount != 8) 
-          { 
+          if(toothCurrentCount != 8)
+          {
             // This should never be true, except when there's noise
-            currentStatus.hasSync = false; 
+            currentStatus.hasSync = false;
             currentStatus.syncLossCounter++;
-          } 
+          }
           else { toothCurrentCount = 8; } //Why? Just why?
         }
-      } //Has sync and 4 cylinder 
+      } //Has sync and 4 cylinder
     } // Use resync or cranking
   } //Trigger filter
 }
