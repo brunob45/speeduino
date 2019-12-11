@@ -1006,18 +1006,8 @@ void triggerSetup_4G63()
 
 void apply_4G63_filter()
 {
-  if(toothCurrentCount & 1)
-  {
-    triggerToothAngle = 70;
-  }
-  else if(configPage2.nCylinders == 4)
-  {
-    triggerToothAngle = 110;
-  }
-  else
-  {
-    triggerToothAngle = 50;
-  }
+  if(toothCurrentCount & 1) { triggerToothAngle = 70; }
+  else { triggerToothAngle = 110; }
 
   //Whilst this is an uneven tooth pattern, if the specific angle between the last 2 teeth is specified, 1st deriv prediction can be used
   if(configPage4.triggerFilter == 0)
@@ -1025,82 +1015,89 @@ void apply_4G63_filter()
     //trigger filter is turned off.
     triggerFilterTime = 0;
   }
-  else if(configPage2.nCylinders == 4)
+  else if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
   {
-    if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
+    //Lite filter
+    if(toothCurrentCount & 1)
     {
-      //Lite filter
-      if(toothCurrentCount & 1)
-      {
-        triggerFilterTime = PERCENT_OF_N(65*110/70, curGap); // curGap;
-      }
-      else
-      {
-        triggerFilterTime = PERCENT_OF_N(65*70/110, curGap); // (curGap * 3) >> 3;
-      }
+      triggerFilterTime = PERCENT_OF_N(65*110/70, curGap); // curGap;
     }
-    else if(configPage4.triggerFilter == 2)
+    else
     {
-      //Medium filter level
-      if(toothCurrentCount & 1)
-      {
-        triggerFilterTime = PERCENT_OF_N(80*110/70, curGap); // (curGap * 5) >> 2;
-      }
-      else
-      {
-        triggerFilterTime = PERCENT_OF_N(80*70/110, curGap); // (curGap >> 1);
-      }
-    }
-    else // if (configPage4.triggerFilter == 3)
-      {
-      //Aggressive filter level
-      if(toothCurrentCount & 1)
-      {
-        triggerFilterTime = PERCENT_OF_N(90*110/70, curGap); // (curGap * 11) >> 3;
-      }
-      else
-      {
-        triggerFilterTime = PERCENT_OF_N(90*70/110, curGap); // (curGap * 9) >> 4;
-      }
+      triggerFilterTime = PERCENT_OF_N(65*70/110, curGap); // (curGap * 3) >> 3;
     }
   }
-  else // if(configPage2.nCylinders == 6)
+  else if(configPage4.triggerFilter == 2)
   {
-    if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
+    //Medium filter level
+    if(toothCurrentCount & 1)
     {
-      //Lite filter
-      if(toothCurrentCount & 1)
-      {
-        triggerFilterTime = PERCENT_OF_N(65*50/70, curGap); // (curGap >> 2);
-      }
-      else
-      {
-        triggerFilterTime = PERCENT_OF_N(65*70/50, curGap); // curGap >> 1;
-      }
+      triggerFilterTime = PERCENT_OF_N(80*110/70, curGap); // (curGap * 5) >> 2;
     }
-    else if(configPage4.triggerFilter == 2)
+    else
     {
-      //Medium filter level
-      if(toothCurrentCount & 1)
-      {
-        triggerFilterTime = PERCENT_OF_N(80*50/70, curGap); // (curGap * 3) >> 3 ;
-      }
-      else
-      {
-        triggerFilterTime = PERCENT_OF_N(80*70/50, curGap); // (curGap * 3) >> 2;
-      }
+      triggerFilterTime = PERCENT_OF_N(80*70/110, curGap); // (curGap >> 1);
     }
-    else // if (configPage4.triggerFilter == 3)
+  }
+  else // if (configPage4.triggerFilter == 3)
     {
-      //Aggressive filter level
-      if(toothCurrentCount & 1)
-      {
-        triggerFilterTime = PERCENT_OF_N(90*50/70, curGap); // curGap >> 1 ;
-      }
-      else
-      {
-        triggerFilterTime = PERCENT_OF_N(90*70/50, curGap); // curGap;
-      }
+    //Aggressive filter level
+    if(toothCurrentCount & 1)
+    {
+      triggerFilterTime = PERCENT_OF_N(90*110/70, curGap); // (curGap * 11) >> 3;
+    }
+    else
+    {
+      triggerFilterTime = PERCENT_OF_N(90*70/110, curGap); // (curGap * 9) >> 4;
+    }
+  }
+}
+
+void apply_6G72_filter()
+{
+  if(toothCurrentCount & 1) { triggerToothAngle = 70; }
+  else { triggerToothAngle = 50; }
+
+  //Whilst this is an uneven tooth pattern, if the specific angle between the last 2 teeth is specified, 1st deriv prediction can be used
+  if(configPage4.triggerFilter == 0)
+  {
+    //trigger filter is turned off.
+    triggerFilterTime = 0;
+  }
+  else if( (configPage4.triggerFilter == 1) || (currentStatus.RPM < 1400) )
+  {
+    //Lite filter
+    if(toothCurrentCount & 1)
+    {
+      triggerFilterTime = PERCENT_OF_N(65*50/70, curGap); // (curGap >> 2);
+    }
+    else
+    {
+      triggerFilterTime = PERCENT_OF_N(65*70/50, curGap); // curGap >> 1;
+    }
+  }
+  else if(configPage4.triggerFilter == 2)
+  {
+    //Medium filter level
+    if(toothCurrentCount & 1)
+    {
+      triggerFilterTime = PERCENT_OF_N(80*50/70, curGap); // (curGap * 3) >> 3 ;
+    }
+    else
+    {
+      triggerFilterTime = PERCENT_OF_N(80*70/50, curGap); // (curGap * 3) >> 2;
+    }
+  }
+  else // if (configPage4.triggerFilter == 3)
+  {
+    //Aggressive filter level
+    if(toothCurrentCount & 1)
+    {
+      triggerFilterTime = PERCENT_OF_N(90*50/70, curGap); // curGap >> 1 ;
+    }
+    else
+    {
+      triggerFilterTime = PERCENT_OF_N(90*70/50, curGap); // curGap;
     }
   }
 }
@@ -1115,6 +1112,11 @@ void decode_4G63_tooth(const uint8_t& currentTrigger)
     if(lastTrigger == TRIG2_FALLING)
     {
       toothCurrentCount = 5-4;
+      currentStatus.hasSync = true;
+    }
+    else if(READ_SEC_TRIGGER() == true)
+    {
+      toothCurrentCount = 1+4;
       currentStatus.hasSync = true;
     }
   }
@@ -1145,7 +1147,9 @@ void decode_4G63_tooth(const uint8_t& currentTrigger)
       // currentStatus.hasSync = true;
     }
   }
-  lastTrigger = currentTrigger;
+
+  if(currentStatus.hasSync) { lastTrigger = TRIG_NONE; }
+  else { lastTrigger = currentTrigger; }
 }
 
 void decode_6G72_tooth(const uint8_t& currentTrigger)
@@ -1170,7 +1174,9 @@ void decode_6G72_tooth(const uint8_t& currentTrigger)
     }
     //Else, cannot gain sync for 6 cylinder here.
   }
-  lastTrigger = currentTrigger;
+
+  if(currentStatus.hasSync) { lastTrigger = TRIG_NONE; }
+  else { lastTrigger = currentTrigger; }
 }
 
 void triggerPri_4G63()
@@ -1205,7 +1211,7 @@ void triggerPri_4G63()
           if( (toothCurrentCount == 1) || (toothCurrentCount == 5) ) { endCoil1Charge(); endCoil3Charge(); }
           else if( (toothCurrentCount == 3) || (toothCurrentCount == 7) ) { endCoil2Charge(); endCoil4Charge(); }
         }
-        else // if(configPage2.nCylinders == 6)
+        else if(configPage2.nCylinders == 6)
         {
           if( (toothCurrentCount == 1) || (toothCurrentCount == 7) ) { endCoil1Charge(); }
           else if( (toothCurrentCount == 3) || (toothCurrentCount == 9) ) { endCoil2Charge(); }
@@ -1213,7 +1219,8 @@ void triggerPri_4G63()
         }
       }
 
-      apply_4G63_filter();
+      if(configPage2.nCylinders == 4) { apply_4G63_filter(); }
+      else { apply_6G72_filter(); }
 
       //EXPERIMENTAL!
       //New ignition mode is ONLY available on 4g63 when the trigger angle is set to the stock value of 0.
@@ -1271,7 +1278,6 @@ void triggerSec_4G63()
     //if( (currentStatus.RPM < currentStatus.crankRPM) || (currentStatus.hasSync == false) )
     if( (currentStatus.hasSync == false) )
     {
-
       triggerFilterTime = 1500; //If this is removed, can have trouble getting sync again after the engine is turned off (but ECU not reset).
       triggerSecFilterTime = triggerSecFilterTime >> 1; //Divide the secondary filter time by 2 again, making it 25%. Only needed when cranking
       if(configPage2.nCylinders == 4) { decode_4G63_tooth(TRIG2_FALLING); }
