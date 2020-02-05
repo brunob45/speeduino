@@ -17,8 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-#ifndef UNIT_TEST  // Scope guard for unit testing
-
 #include <stdint.h> //developer.mbed.org/handbook/C-Data-Types
 //************************************************
 #include "globals.h"
@@ -40,8 +38,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include BOARD_H //Note that this is not a real file, it is defined in globals.h. 
 #include EEPROM_LIB_H
 
+#ifndef UNIT_TEST // Scope guard for unit testing
 void setup()
 {
+  initialisationComplete = false; //Tracks whether the initialiseAll() function has run completely
   initialiseAll();
 }
 
@@ -72,17 +72,27 @@ void loop()
                   if (CANSerial.available() > 0)  { canCommand(); }
                 }
           }
-      #if  defined(CORE_TEENSY) || defined(CORE_STM32)
-          else if (configPage9.enable_secondarySerial == 2) // can module enabled
+      #if  defined(CORE_TEENSY35)
+          //currentStatus.canin[12] = configPage9.enable_intcan;
+          if (configPage9.enable_intcan == 1) // use internal can module
           {
             //check local can module
             // if ( BIT_CHECK(LOOP_TIMER, BIT_TIMER_15HZ) or (CANbus0.available())
-            //    {
-            //      CANbus0.read(rx_msg);
-            //    }
+            while (Can0.read(inMsg) ) 
+                 {
+                  Can0.read(inMsg);
+                  //currentStatus.canin[12] = inMsg.buf[5];
+                 } 
           }
       #endif
-
+      
+      #if  defined(CORE_STM32)
+          else if (configPage9.enable_intcan == 1) // can module enabled
+          {
+            //check local can module
+          }
+      #endif
+          
     //Displays currently disabled
     // if (configPage2.displayType && (mainLoopCount & 255) == 1) { updateDisplay();}
 
@@ -128,7 +138,8 @@ void loop()
       BIT_CLEAR(currentStatus.engine, BIT_ENGINE_ASE); //Same as above except for ASE status
       //This is a safety check. If for some reason the interrupts have got screwed up (Leading to 0rpm), this resets them.
       //It can possibly be run much less frequently.
-      initialiseTriggers();
+      //This should only be run if the high speed logger are off because it will change the trigger interrupts back to defaults rather than the logger versions
+      if( (currentStatus.toothLogEnabled == false) && (currentStatus.compositeLogEnabled == false) ) { initialiseTriggers(); }
 
       VVT_PIN_LOW();
       DISABLE_VVT_TIMER();
@@ -144,6 +155,13 @@ void loop()
     {
       BIT_CLEAR(TIMER_mask, BIT_TIMER_15HZ);
       readTPS(); //TPS reading to be performed every 32 loops (any faster and it can upset the TPSdot sampling time)
+      #if  defined(CORE_TEENSY)       
+          if (configPage9.enable_intcan == 1) // use internal can module
+          {
+           // this is just to test the interface is sending
+           sendCancommand(3,(configPage9.realtime_base_address+ 0x100),currentStatus.TPS,0,0x200);
+          }
+      #endif     
 
       //Check for launching/flat shift (clutch) can be done around here too
       previousClutchTrigger = clutchTrigger;
@@ -408,7 +426,12 @@ void loop()
       currentStatus.corrections = correctionsFuel();
 
       currentStatus.advance = getAdvance();
-      //currentStatus.PW1 = PW(req_fuel_uS, currentStatus.VE, currentStatus.MAP, currentStatus.corrections, inj_opentime_uS);
+
+      if (configPage2.battVCorMode == BATTV_COR_MODE_OPENTIME)
+      {
+        inj_opentime_uS = configPage2.injOpen * table2D_getValue(&injectorVCorrectionTable, currentStatus.battery10); // Apply voltage correction to injector open time.
+      }
+
       currentStatus.PW1 = PW(req_fuel_uS, currentStatus.VE, currentStatus.MAP, currentStatus.corrections, inj_opentime_uS);
 
       //Manual adder for nitrous. These are not in correctionsFuel() because they are direct adders to the ms value, not % based
@@ -678,7 +701,7 @@ void loop()
 
           ignition3EndAngle = channel3IgnDegrees - currentStatus.advance;
           if(ignition3EndAngle > CRANK_ANGLE_MAX_IGN) {ignition3EndAngle -= CRANK_ANGLE_MAX_IGN;}
-          ignition3StartAngle = channel3IgnDegrees - dwellAngle;
+          ignition3StartAngle = ignition3EndAngle - dwellAngle;
           if(ignition3StartAngle < 0) {ignition3StartAngle += CRANK_ANGLE_MAX_IGN;}
           break;
         //4 cylinders
@@ -735,7 +758,7 @@ void loop()
           ignition4StartAngle = ignition4EndAngle - dwellAngle;
           if(ignition4StartAngle < 0) {ignition4StartAngle += CRANK_ANGLE_MAX_IGN;}
 
-          ignition5EndAngle = channel5IgnDegrees - currentStatus.advance - dwellAngle;
+          ignition5EndAngle = channel5IgnDegrees - currentStatus.advance;
           if(ignition5EndAngle > CRANK_ANGLE_MAX_IGN) {ignition5EndAngle -= CRANK_ANGLE_MAX_IGN;}
           ignition5StartAngle = ignition5EndAngle - dwellAngle;
           if(ignition5StartAngle < 0) {ignition5StartAngle += CRANK_ANGLE_MAX_IGN;}
@@ -889,7 +912,7 @@ void loop()
 #endif
 
 #if INJ_CHANNELS >= 5
-        if( (channel5InjEnabled) && (currentStatus.PW4 >= inj_opentime_uS) )
+        if( (channel5InjEnabled) && (currentStatus.PW5 >= inj_opentime_uS) )
         {
           tempCrankAngle = crankAngle - channel5InjDegrees;
           if( tempCrankAngle < 0) { tempCrankAngle += CRANK_ANGLE_MAX_INJ; }
@@ -905,9 +928,10 @@ void loop()
                       (unsigned long)currentStatus.PW1,
                       closeInjector3and5
                     );*/
-            setFuelSchedule3(
+            
+            setFuelSchedule5(
                       ((tempStartAngle - tempCrankAngle) * (unsigned long)timePerDegree),
-                      (unsigned long)currentStatus.PW1
+                      (unsigned long)currentStatus.PW5
                       );
           }
         }
@@ -1024,17 +1048,15 @@ void loop()
         if (crankAngle > CRANK_ANGLE_MAX_IGN ) { crankAngle -= 360; }
 
 #if IGN_CHANNELS >= 1
+        if ( (ignition1StartAngle <= crankAngle) && (ignitionSchedule1.Status == RUNNING) ) { ignition1StartAngle += CRANK_ANGLE_MAX_IGN; }
         if ( (ignition1StartAngle > crankAngle) && (curRollingCut != 1) )
         {
-            if(ignitionSchedule1.Status != RUNNING)
-            {
-              setIgnitionSchedule1(ign1StartFunction,
-                        //((unsigned long)(ignition1StartAngle - crankAngle) * (unsigned long)timePerDegree),
-                        angleToTime((ignition1StartAngle - crankAngle), CRANKMATH_METHOD_INTERVAL_REV),
-                        currentStatus.dwell + fixedCrankingOverride, //((unsigned long)((unsigned long)currentStatus.dwell* currentStatus.RPM) / newRPM) + fixedCrankingOverride,
-                        ign1EndFunction
-                        );
-            }
+          setIgnitionSchedule1(ign1StartFunction,
+                    //((unsigned long)(ignition1StartAngle - crankAngle) * (unsigned long)timePerDegree),
+                    angleToTime((ignition1StartAngle - crankAngle), CRANKMATH_METHOD_INTERVAL_REV),
+                    currentStatus.dwell + fixedCrankingOverride, //((unsigned long)((unsigned long)currentStatus.dwell* currentStatus.RPM) / newRPM) + fixedCrankingOverride,
+                    ign1EndFunction
+                    );
         }
 #endif
 
@@ -1068,6 +1090,7 @@ void loop()
         //if (tempStartAngle > tempCrankAngle)
         {
             unsigned long ignition2StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule2.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition2StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             //else if (tempStartAngle < tempCrankAngle) { ignition2StartTime = ((long)(360 - tempCrankAngle + tempStartAngle) * (long)timePerDegree); }
             else { ignition2StartTime = 0; }
@@ -1091,6 +1114,7 @@ void loop()
         //if (tempStartAngle > tempCrankAngle)
         {
             long ignition3StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule3.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition3StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             //else if (tempStartAngle < tempCrankAngle) { ignition4StartTime = ((long)(360 - tempCrankAngle + tempStartAngle) * (long)timePerDegree); }
             else { ignition3StartTime = 0; }
@@ -1115,6 +1139,7 @@ void loop()
         {
 
             long ignition4StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule4.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition4StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             //else if (tempStartAngle < tempCrankAngle) { ignition4StartTime = ((long)(360 - tempCrankAngle + tempStartAngle) * (long)timePerDegree); }
             else { ignition4StartTime = 0; }
@@ -1139,6 +1164,7 @@ void loop()
         {
 
             long ignition5StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule5.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition5StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             //else if (tempStartAngle < tempCrankAngle) { ignition4StartTime = ((long)(360 - tempCrankAngle + tempStartAngle) * (long)timePerDegree); }
             else { ignition5StartTime = 0; }
@@ -1160,6 +1186,7 @@ void loop()
         if ( tempStartAngle < 0) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
         {
             unsigned long ignition6StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule6.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition6StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             else { ignition6StartTime = 0; }
 
@@ -1181,6 +1208,7 @@ void loop()
         if ( tempStartAngle < 0) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
         {
             unsigned long ignition7StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule7.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition7StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             else { ignition7StartTime = 0; }
 
@@ -1202,6 +1230,7 @@ void loop()
         if ( tempStartAngle < 0) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
         {
             unsigned long ignition8StartTime = 0;
+            if ( (tempStartAngle <= tempCrankAngle) && (ignitionSchedule8.Status == RUNNING) ) { tempStartAngle += CRANK_ANGLE_MAX_IGN; }
             if(tempStartAngle > tempCrankAngle) { ignition8StartTime = angleToTime((tempStartAngle - tempCrankAngle), CRANKMATH_METHOD_INTERVAL_REV); }
             else { ignition8StartTime = 0; }
 
@@ -1231,6 +1260,7 @@ void loop()
       BIT_CLEAR(currentStatus.status3, BIT_STATUS3_RESET_PREVENT);
     }
 } //loop()
+#endif //Unit test guard
 
 /**
  * @brief This function calculates the required pulsewidth time (in us) given the current system state
@@ -1242,7 +1272,7 @@ void loop()
  * @param injOpen Injector opening time. The time the injector take to open minus the time it takes to close (Both in uS)
  * @return uint16_t The injector pulse width in uS
  */
-uint16_t PW(int REQ_FUEL, byte VE, long MAP, int corrections, int injOpen)
+uint16_t PW(int REQ_FUEL, byte VE, long MAP, uint16_t corrections, int injOpen)
 {
   //Standard float version of the calculation
   //return (REQ_FUEL * (float)(VE/100.0) * (float)(MAP/100.0) * (float)(TPS/100.0) * (float)(corrections/100.0) + injOpen);
@@ -1262,7 +1292,7 @@ uint16_t PW(int REQ_FUEL, byte VE, long MAP, int corrections, int injOpen)
   iCorrections = (corrections << 7) / 100;
 
 
-  unsigned long intermediate = ((long)REQ_FUEL * (long)iVE) >> 7; //Need to use an intermediate value to avoid overflowing the long
+  unsigned long intermediate = ((uint32_t)REQ_FUEL * (uint32_t)iVE) >> 7; //Need to use an intermediate value to avoid overflowing the long
   if ( configPage2.multiplyMAP == true ) {
     intermediate = (intermediate * (unsigned long)iMAP) >> 7;
   }
@@ -1408,5 +1438,3 @@ uint16_t calculateInjector5StartAngle(unsigned int PWdivTimerPerDegree)
 
   return tempInjector5StartAngle;
 }
-
-#endif //Unit testing scope guard
