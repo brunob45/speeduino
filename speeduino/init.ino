@@ -359,18 +359,17 @@ void initialiseAll()
     ignition7EndAngle = 0;
     ignition8EndAngle = 0;
 
-    if(configPage2.strokes == FOUR_STROKE) { CRANK_ANGLE_MAX_INJ = 720 / currentStatus.nSquirts; }
-    else { CRANK_ANGLE_MAX_INJ = 360 / currentStatus.nSquirts; }
-
     if(configPage2.strokes == FOUR_STROKE)
     {
       //Default is 1 squirt per revolution, so we halve the given req-fuel figure (Which would be over 2 revolutions)
       req_fuel_uS = req_fuel_uS / 2; //The req_fuel calculation above gives the total required fuel (At VE 100%) in the full cycle. If we're doing more than 1 squirt per cycle then we need to split the amount accordingly. (Note that in a non-sequential 4-stroke setup you cannot have less than 2 squirts as you cannot determine the stroke to make the single squirt on)
-      if(configPage2.injTiming)
+      if(configPage2.constantFuel && configPage2.injTiming)
       {
         req_fuel_uS = req_fuel_uS / 2;
       }
+      CRANK_ANGLE_MAX_INJ = 720 / currentStatus.nSquirts;
     }
+    else { CRANK_ANGLE_MAX_INJ = 360 / currentStatus.nSquirts; }
 
     switch (configPage2.nCylinders) {
     case 1:
