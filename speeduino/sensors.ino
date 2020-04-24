@@ -121,6 +121,11 @@ void initialiseADC()
 
 static inline void instanteneousMAPReading()
 {
+  currentStatus.mapDOT = 0;
+  currentStatus.MAP = 100;
+  currentStatus.mapADC = 512;
+  return;
+
   //Update the calculation times and last value. These are used by the MAP based Accel enrich
   MAPlast = currentStatus.MAP;
   MAPlast_time = MAP_time;
@@ -149,6 +154,11 @@ static inline void instanteneousMAPReading()
 
 static inline void readMAP()
 {
+  currentStatus.mapADC = 512;
+  currentStatus.MAP = 100;
+  currentStatus.mapDOT = 0;
+  return;
+
   unsigned int tempReading;
   //MAP Sampling system
   switch(configPage2.mapSample)
