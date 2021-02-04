@@ -19,6 +19,8 @@ Hence we will preload the timer with 131 cycles to leave 125 until overflow (1ms
 #ifndef TIMERS_H
 #define TIMERS_H
 
+#include <Arduino.h>
+
 volatile bool tachoAlt = false;
 #define TACHO_PULSE_HIGH() *tach_pin_port |= (tach_pin_mask)
 #define TACHO_PULSE_LOW() *tach_pin_port &= ~(tach_pin_mask)

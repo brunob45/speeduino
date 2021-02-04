@@ -3,29 +3,22 @@
 
 #include <Arduino.h>
 
-inline void openInjector1();
-inline void closeInjector1();
-
-inline void openInjector2();
-inline void closeInjector2();
-
-inline void openInjector3();
-inline void closeInjector3();
-
-inline void openInjector4();
-inline void closeInjector4();
-
-inline void openInjector5();
-inline void closeInjector5();
-
-inline void openInjector6();
-inline void closeInjector6();
-
-inline void openInjector7();
-inline void closeInjector7();
-
-inline void openInjector8();
-inline void closeInjector8();
+void openInjector1();
+void closeInjector1();
+void openInjector2();
+void closeInjector2();
+void openInjector3();
+void closeInjector3();
+void openInjector4();
+void closeInjector4();
+void openInjector5();
+void closeInjector5();
+void openInjector6();
+void closeInjector6();
+void openInjector7();
+void closeInjector7();
+void openInjector8();
+void closeInjector8();
 
 // These are for Semi-Sequential and 5 Cylinder injection
 void openInjector1and4();
@@ -59,34 +52,27 @@ void injector6Toggle();
 void injector7Toggle();
 void injector8Toggle();
 
-inline void beginCoil1Charge();
-inline void endCoil1Charge();
-
-inline void beginCoil2Charge();
-inline void endCoil2Charge();
-
-inline void beginCoil3Charge();
-inline void endCoil3Charge();
-
-inline void beginCoil4Charge();
-inline void endCoil4Charge();
-
-inline void beginCoil5Charge();
-inline void endCoil5Charge();
-
-inline void beginCoil6Charge();
-inline void endCoil6Charge();
-
-inline void beginCoil7Charge();
-inline void endCoil7Charge();
-
-inline void beginCoil8Charge();
-inline void endCoil8Charge();
+void beginCoil1Charge();
+void endCoil1Charge();
+void beginCoil2Charge();
+void endCoil2Charge();
+void beginCoil3Charge();
+void endCoil3Charge();
+void beginCoil4Charge();
+void endCoil4Charge();
+void beginCoil5Charge();
+void endCoil5Charge();
+void beginCoil6Charge();
+void endCoil6Charge();
+void beginCoil7Charge();
+void endCoil7Charge();
+void beginCoil8Charge();
+void endCoil8Charge();
 
 //The following functions are used specifically for the trailing coil on rotary engines. They are separate as they also control the switching of the trailing select pin
-inline void beginTrailingCoilCharge();
-inline void endTrailingCoilCharge1();
-inline void endTrailingCoilCharge2();
+void beginTrailingCoilCharge();
+void endTrailingCoilCharge1();
+void endTrailingCoilCharge2();
 
 //And the combined versions of the above for simplicity
 void beginCoil1and3Charge();

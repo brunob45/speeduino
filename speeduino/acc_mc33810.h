@@ -2,6 +2,7 @@
 #define MC33810_H
 
 #include <SPI.h>
+#include "globals.h"
 
 volatile PORT_TYPE *mc33810_1_pin_port;
 volatile PINMASK_TYPE mc33810_1_pin_mask;

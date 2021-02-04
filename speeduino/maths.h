@@ -1,9 +1,11 @@
 #ifndef MATH_H
 #define MATH_H
 
+#include <Arduino.h>
+
 int fastMap1023toX(int, int);
 unsigned long percentage(byte, unsigned long);
-inline long powint(int, unsigned int);
+long powint(int, unsigned int);
 int divs100(long);
 unsigned long divu100(unsigned long);
 

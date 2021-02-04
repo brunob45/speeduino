@@ -4,6 +4,8 @@ This file is used for everything related to maps/tables including their definiti
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <Arduino.h>
+
 #define TABLE_RPM_MULTIPLIER  100
 #define TABLE_LOAD_MULTIPLIER 2
 
@@ -38,9 +40,6 @@ This file is used for everything related to maps/tables including their definiti
 YOU MUST UPDATE THE TABLE COUNTS IN THE LINE BELOW WHENEVER A NEW TABLE IS ADDED!
 */
 #define TABLE_HEAP_SIZE     (5 * TABLE3D_SIZE_16) + (4 * TABLE3D_SIZE_8) + (4 * TABLE3D_SIZE_6)+1
-
-static uint8_t _3DTable_heap[TABLE_HEAP_SIZE];
-static uint16_t _heap_pointer = 0;
 
 /*
 The 2D table can contain either 8-bit (byte) or 16-bit (int) values

@@ -1,6 +1,8 @@
 #ifndef RTC_H
 #define RTC_H
 
+#include <Arduino.h>
+
 void initRTC();
 uint8_t rtc_getSecond();
 uint8_t rtc_getMinute();

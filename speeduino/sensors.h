@@ -74,9 +74,9 @@ byte cltErrorCount = 0;
  */
 #define ADC_FILTER(input, alpha, prior) (((long)input * (256 - alpha) + ((long)prior * alpha))) >> 8
 
-static inline void instanteneousMAPReading() __attribute__((always_inline));
-static inline void readMAP() __attribute__((always_inline));
-static inline void validateMAP();
+void instanteneousMAPReading();
+void readMAP();
+void validateMAP();
 void initialiseADC();
 void readTPS(bool=true); //Allows the option to override the use of the filter
 void readO2_2();

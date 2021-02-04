@@ -48,6 +48,7 @@ struct packedError
 
 byte getNextError();
 byte setError(byte);
+void clearError(byte errorID);
 
 byte errorCount = 0;
 byte errorCodes[4];

@@ -11,6 +11,9 @@ Note that this may clear some of the existing values of the table
 #include "table.h"
 #include "globals.h"
 
+static uint8_t _3DTable_heap[TABLE_HEAP_SIZE];
+static uint16_t _heap_pointer = 0;
+
 /*
 void table2D_setSize(struct table2D* targetTable, byte newSize)
 {

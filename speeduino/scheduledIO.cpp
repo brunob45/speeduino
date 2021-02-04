@@ -4,40 +4,38 @@
 #include "timers.h"
 #include "acc_mc33810.h"
 
-inline void openInjector1()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector1_DIRECT(); }   else { openInjector1_MC33810(); } }
-inline void closeInjector1()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector1_DIRECT(); }  else { closeInjector1_MC33810(); } }
-inline void openInjector2()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector2_DIRECT(); }   else { openInjector2_MC33810(); } }
-inline void closeInjector2()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector2_DIRECT(); }  else { closeInjector2_MC33810(); } }
-inline void openInjector3()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector3_DIRECT(); }   else { openInjector3_MC33810(); } }
-inline void closeInjector3()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector3_DIRECT(); }  else { closeInjector3_MC33810(); } }
-inline void openInjector4()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector4_DIRECT(); }   else { openInjector4_MC33810(); } }
-inline void closeInjector4()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector4_DIRECT(); }  else { closeInjector4_MC33810(); } }
-inline void openInjector5()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector5_DIRECT(); }   else { openInjector5_MC33810(); } }
-inline void closeInjector5()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector5_DIRECT(); }  else { closeInjector5_MC33810(); } }
-inline void openInjector6()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector6_DIRECT(); }   else { openInjector6_MC33810(); } }
-inline void closeInjector6()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector6_DIRECT(); }  else { closeInjector6_MC33810(); } }
-inline void openInjector7()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector7_DIRECT(); }   else { openInjector7_MC33810(); } }
-inline void closeInjector7()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector7_DIRECT(); }  else { closeInjector7_MC33810(); } }
-inline void openInjector8()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector8_DIRECT(); }   else { openInjector8_MC33810(); } }
-inline void closeInjector8()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector8_DIRECT(); }  else { closeInjector8_MC33810(); } }
-
-inline void injector1Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector1Toggle_DIRECT(); } else { injector1Toggle_MC33810(); } }
-inline void injector2Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector2Toggle_DIRECT(); } else { injector2Toggle_MC33810(); } }
-inline void injector3Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector3Toggle_DIRECT(); } else { injector3Toggle_MC33810(); } }
-inline void injector4Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector4Toggle_DIRECT(); } else { injector4Toggle_MC33810(); } }
-inline void injector5Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector5Toggle_DIRECT(); } else { injector5Toggle_MC33810(); } }
-inline void injector6Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector6Toggle_DIRECT(); } else { injector6Toggle_MC33810(); } }
-inline void injector7Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector7Toggle_DIRECT(); } else { injector7Toggle_MC33810(); } }
-inline void injector8Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector8Toggle_DIRECT(); } else { injector8Toggle_MC33810(); } }
-
-inline void coil1Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil1Toggle_DIRECT(); } else { coil1Toggle_MC33810(); } }
-inline void coil2Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil2Toggle_DIRECT(); } else { coil2Toggle_MC33810(); } }
-inline void coil3Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil3Toggle_DIRECT(); } else { coil3Toggle_MC33810(); } }
-inline void coil4Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil4Toggle_DIRECT(); } else { coil4Toggle_MC33810(); } }
-inline void coil5Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil5Toggle_DIRECT(); } else { coil5Toggle_MC33810(); } }
-inline void coil6Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil6Toggle_DIRECT(); } else { coil6Toggle_MC33810(); } }
-inline void coil7Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil7Toggle_DIRECT(); } else { coil7Toggle_MC33810(); } }
-inline void coil8Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil8Toggle_DIRECT(); } else { coil8Toggle_MC33810(); } }
+void openInjector1()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector1_DIRECT(); }   else { openInjector1_MC33810(); } }
+void closeInjector1()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector1_DIRECT(); }  else { closeInjector1_MC33810(); } }
+void openInjector2()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector2_DIRECT(); }   else { openInjector2_MC33810(); } }
+void closeInjector2()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector2_DIRECT(); }  else { closeInjector2_MC33810(); } }
+void openInjector3()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector3_DIRECT(); }   else { openInjector3_MC33810(); } }
+void closeInjector3()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector3_DIRECT(); }  else { closeInjector3_MC33810(); } }
+void openInjector4()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector4_DIRECT(); }   else { openInjector4_MC33810(); } }
+void closeInjector4()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector4_DIRECT(); }  else { closeInjector4_MC33810(); } }
+void openInjector5()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector5_DIRECT(); }   else { openInjector5_MC33810(); } }
+void closeInjector5()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector5_DIRECT(); }  else { closeInjector5_MC33810(); } }
+void openInjector6()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector6_DIRECT(); }   else { openInjector6_MC33810(); } }
+void closeInjector6()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector6_DIRECT(); }  else { closeInjector6_MC33810(); } }
+void openInjector7()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector7_DIRECT(); }   else { openInjector7_MC33810(); } }
+void closeInjector7()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector7_DIRECT(); }  else { closeInjector7_MC33810(); } }
+void openInjector8()   { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { openInjector8_DIRECT(); }   else { openInjector8_MC33810(); } }
+void closeInjector8()  { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { closeInjector8_DIRECT(); }  else { closeInjector8_MC33810(); } }
+void injector1Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector1Toggle_DIRECT(); } else { injector1Toggle_MC33810(); } }
+void injector2Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector2Toggle_DIRECT(); } else { injector2Toggle_MC33810(); } }
+void injector3Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector3Toggle_DIRECT(); } else { injector3Toggle_MC33810(); } }
+void injector4Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector4Toggle_DIRECT(); } else { injector4Toggle_MC33810(); } }
+void injector5Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector5Toggle_DIRECT(); } else { injector5Toggle_MC33810(); } }
+void injector6Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector6Toggle_DIRECT(); } else { injector6Toggle_MC33810(); } }
+void injector7Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector7Toggle_DIRECT(); } else { injector7Toggle_MC33810(); } }
+void injector8Toggle() { if(injectorOutputControl != OUTPUT_CONTROL_MC33810) { injector8Toggle_DIRECT(); } else { injector8Toggle_MC33810(); } }
+void coil1Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil1Toggle_DIRECT(); } else { coil1Toggle_MC33810(); } }
+void coil2Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil2Toggle_DIRECT(); } else { coil2Toggle_MC33810(); } }
+void coil3Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil3Toggle_DIRECT(); } else { coil3Toggle_MC33810(); } }
+void coil4Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil4Toggle_DIRECT(); } else { coil4Toggle_MC33810(); } }
+void coil5Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil5Toggle_DIRECT(); } else { coil5Toggle_MC33810(); } }
+void coil6Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil6Toggle_DIRECT(); } else { coil6Toggle_MC33810(); } }
+void coil7Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil7Toggle_DIRECT(); } else { coil7Toggle_MC33810(); } }
+void coil8Toggle()     { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil8Toggle_DIRECT(); } else { coil8Toggle_MC33810(); } }
 
 // These are for Semi-Sequential and 5 Cylinder injection
 void openInjector1and4() { openInjector1(); openInjector4(); }
@@ -62,34 +60,28 @@ void closeInjector3and7() { closeInjector3(); closeInjector7(); }
 void openInjector4and8() { openInjector4(); openInjector8(); }
 void closeInjector4and8() { closeInjector4(); closeInjector8(); }
 
-inline void beginCoil1Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil1Charging_DIRECT(); } else { coil1Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil1Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil1StopCharging_DIRECT(); } else { coil1StopCharging_MC33810(); } }
+void beginCoil1Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil1Charging_DIRECT(); } else { coil1Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil1Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil1StopCharging_DIRECT(); } else { coil1StopCharging_MC33810(); } }
 
-inline void beginCoil2Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil2Charging_DIRECT(); } else { coil2Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil2Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil2StopCharging_DIRECT(); } else { coil2StopCharging_MC33810(); } }
-
-inline void beginCoil3Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil3Charging_DIRECT(); } else { coil3Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil3Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil3StopCharging_DIRECT(); } else { coil3StopCharging_MC33810(); } }
-
-inline void beginCoil4Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil4Charging_DIRECT(); } else { coil4Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil4Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil4StopCharging_DIRECT(); } else { coil4StopCharging_MC33810(); } }
-
-inline void beginCoil5Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil5Charging_DIRECT(); } else { coil5Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil5Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil5StopCharging_DIRECT(); } else { coil5StopCharging_MC33810(); } }
-
-inline void beginCoil6Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil6Charging_DIRECT(); } else { coil6Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil6Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil6StopCharging_DIRECT(); } else { coil6StopCharging_MC33810(); } }
-
-inline void beginCoil7Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil7Charging_DIRECT(); } else { coil7Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil7Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil7StopCharging_DIRECT(); } else { coil7StopCharging_MC33810(); } }
-
-inline void beginCoil8Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil8Charging_DIRECT(); } else { coil8Charging_MC33810(); } tachoOutputFlag = READY; }
-inline void endCoil8Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil8StopCharging_DIRECT(); } else { coil8StopCharging_MC33810(); } }
+void beginCoil2Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil2Charging_DIRECT(); } else { coil2Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil2Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil2StopCharging_DIRECT(); } else { coil2StopCharging_MC33810(); } }
+void beginCoil3Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil3Charging_DIRECT(); } else { coil3Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil3Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil3StopCharging_DIRECT(); } else { coil3StopCharging_MC33810(); } }
+void beginCoil4Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil4Charging_DIRECT(); } else { coil4Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil4Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil4StopCharging_DIRECT(); } else { coil4StopCharging_MC33810(); } }
+void beginCoil5Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil5Charging_DIRECT(); } else { coil5Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil5Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil5StopCharging_DIRECT(); } else { coil5StopCharging_MC33810(); } }
+void beginCoil6Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil6Charging_DIRECT(); } else { coil6Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil6Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil6StopCharging_DIRECT(); } else { coil6StopCharging_MC33810(); } }
+void beginCoil7Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil7Charging_DIRECT(); } else { coil7Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil7Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil7StopCharging_DIRECT(); } else { coil7StopCharging_MC33810(); } }
+void beginCoil8Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil8Charging_DIRECT(); } else { coil8Charging_MC33810(); } tachoOutputFlag = READY; }
+void endCoil8Charge() { if(ignitionOutputControl != OUTPUT_CONTROL_MC33810) { coil8StopCharging_DIRECT(); } else { coil8StopCharging_MC33810(); } }
 
 //The below 3 calls are all part of the rotary ignition mode
-inline void beginTrailingCoilCharge() { beginCoil2Charge(); }
-inline void endTrailingCoilCharge1() { endCoil2Charge(); beginCoil3Charge(); } //Sets ign3 (Trailing select) high
-inline void endTrailingCoilCharge2() { endCoil2Charge(); endCoil3Charge(); } //sets ign3 (Trailing select) low
+void beginTrailingCoilCharge() { beginCoil2Charge(); }
+void endTrailingCoilCharge1() { endCoil2Charge(); beginCoil3Charge(); } //Sets ign3 (Trailing select) high
+void endTrailingCoilCharge2() { endCoil2Charge(); endCoil3Charge(); } //sets ign3 (Trailing select) low
 
 //As above but for ignition (Wasted COP mode)
 void beginCoil1and3Charge() { beginCoil1Charge(); beginCoil3Charge(); tachoOutputFlag = READY; }

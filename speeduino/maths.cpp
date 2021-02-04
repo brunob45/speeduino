@@ -71,7 +71,7 @@ unsigned long percentage(byte x, unsigned long y)
 /*
  * Calculates integer power values. Same as pow() but with ints
  */
-inline long powint(int factor, unsigned int exponent)
+long powint(int factor, unsigned int exponent)
 {
    long product = 1;
    unsigned int counter = exponent;

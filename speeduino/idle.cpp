@@ -489,7 +489,7 @@ Returns:
 True: If the system has been homed. No other action is taken
 False: If the motor has not yet been homed. Will also perform another homing step.
 */
-static inline byte isStepperHomed()
+byte isStepperHomed()
 {
   bool isHomed = true; //As it's the most common scenario, default value is true
   if( completedHomeSteps < (configPage6.iacStepHome * 3) ) //Home steps are divided by 3 from TS
@@ -512,7 +512,7 @@ Returns:
 True: If a step is underway or motor is 'cooling'
 False: If the motor is ready for another step
 */
-static inline byte checkForStepping()
+byte checkForStepping()
 {
   bool isStepping = false;
   unsigned int timeCheck;
@@ -567,7 +567,7 @@ static inline byte checkForStepping()
 /*
 Performs a step
 */
-static inline void doStep()
+void doStep()
 {
   if ( (idleStepper.targetIdleStep <= (idleStepper.curIdleStep - configPage6.iacStepHyster)) || (idleStepper.targetIdleStep >= (idleStepper.curIdleStep + configPage6.iacStepHyster)) ) //Hysteris check
   {
@@ -595,7 +595,7 @@ static inline void doStep()
 }
 
 //This function simply turns off the idle PWM and sets the pin low
-static inline void disableIdle()
+void disableIdle()
 {
   if( (configPage6.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage6.iacAlgorithm == IAC_ALGORITHM_PWM_OL) )
   {
@@ -627,7 +627,7 @@ static inline void disableIdle()
 
 //Any common functions associated with starting the Idle
 //Typically this is enabling the PWM interrupt
-static inline void enableIdle()
+void enableIdle()
 {
   if( (configPage6.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage6.iacAlgorithm == IAC_ALGORITHM_PWM_OL) || (configPage6.iacAlgorithm == IAC_ALGORITHM_PWM_OLCL) )
   {
@@ -642,7 +642,7 @@ static inline void enableIdle()
 #if defined(CORE_AVR) //AVR chips use the ISR for this
 ISR(TIMER1_COMPC_vect)
 #else
-static inline void idleInterrupt() //Most ARM chips can simply call a function
+void idleInterrupt() //Most ARM chips can simply call a function
 #endif
 {
   if (idle_pwm_state)

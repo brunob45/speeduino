@@ -122,7 +122,7 @@ void initialiseADC()
   vssTotalTime = 0;
 }
 
-static inline void validateMAP()
+void validateMAP()
 {
   //Error checks
   if(currentStatus.MAP < VALID_MAP_MIN)
@@ -148,7 +148,7 @@ static inline void validateMAP()
   }
 }
 
-static inline void instanteneousMAPReading()
+void instanteneousMAPReading()
 {
   //Update the calculation times and last value. These are used by the MAP based Accel enrich
   MAPlast = currentStatus.MAP;
@@ -176,7 +176,7 @@ static inline void instanteneousMAPReading()
 
 }
 
-static inline void readMAP()
+void readMAP()
 {
   unsigned int tempReading;
   //MAP Sampling system
