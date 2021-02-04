@@ -50,8 +50,8 @@ byte getNextError();
 byte setError(byte);
 void clearError(byte errorID);
 
-byte errorCount = 0;
-byte errorCodes[4];
+extern byte errorCount;
+extern byte errorCodes[4];
 
 
 #endif

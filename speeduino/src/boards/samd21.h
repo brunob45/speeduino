@@ -21,13 +21,13 @@
   #define PIN_A14               (9ul)
   #define PIN_A15               (9ul)
 
-  static const uint8_t A6  = PIN_A6;
-  static const uint8_t A7  = PIN_A7;
-  static const uint8_t A8  = PIN_A8;
-  static const uint8_t A9  = PIN_A9;
-  static const uint8_t A13  = PIN_A13;
-  static const uint8_t A14  = PIN_A14;
-  static const uint8_t A15  = PIN_A15;
+  const uint8_t A6  = PIN_A6;
+  const uint8_t A7  = PIN_A7;
+  const uint8_t A8  = PIN_A8;
+  const uint8_t A9  = PIN_A9;
+  const uint8_t A13  = PIN_A13;
+  const uint8_t A14  = PIN_A14;
+  const uint8_t A15  = PIN_A15;
 
 /*
 ***********************************************************************************************************

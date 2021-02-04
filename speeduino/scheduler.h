@@ -93,45 +93,45 @@ void refreshIgnitionSchedule1(unsigned long timeToEnd);
 
 //The ARM cores use seprate functions for their ISRs
 #if defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY)
-  static inline void fuelSchedule1Interrupt();
-  static inline void fuelSchedule2Interrupt();
-  static inline void fuelSchedule3Interrupt();
-  static inline void fuelSchedule4Interrupt();
+  void fuelSchedule1Interrupt();
+  void fuelSchedule2Interrupt();
+  void fuelSchedule3Interrupt();
+  void fuelSchedule4Interrupt();
 #if (INJ_CHANNELS >= 5)
-  static inline void fuelSchedule5Interrupt();
+  void fuelSchedule5Interrupt();
 #endif
 #if (INJ_CHANNELS >= 6)
-  static inline void fuelSchedule6Interrupt();
+  void fuelSchedule6Interrupt();
 #endif
 #if (INJ_CHANNELS >= 7)
-  static inline void fuelSchedule7Interrupt();
+  void fuelSchedule7Interrupt();
 #endif
 #if (INJ_CHANNELS >= 8)
-  static inline void fuelSchedule8Interrupt();
+  void fuelSchedule8Interrupt();
 #endif
 #if (IGN_CHANNELS >= 1)
-  static inline void ignitionSchedule1Interrupt();
+  void ignitionSchedule1Interrupt();
 #endif
 #if (IGN_CHANNELS >= 2)
-  static inline void ignitionSchedule2Interrupt();
+  void ignitionSchedule2Interrupt();
 #endif
 #if (IGN_CHANNELS >= 3)
-  static inline void ignitionSchedule3Interrupt();
+  void ignitionSchedule3Interrupt();
 #endif
 #if (IGN_CHANNELS >= 4)
-  static inline void ignitionSchedule4Interrupt();
+  void ignitionSchedule4Interrupt();
 #endif
 #if (IGN_CHANNELS >= 5)
-  static inline void ignitionSchedule5Interrupt();
+  void ignitionSchedule5Interrupt();
 #endif
 #if (IGN_CHANNELS >= 6)
-  static inline void ignitionSchedule6Interrupt();
+  void ignitionSchedule6Interrupt();
 #endif
 #if (IGN_CHANNELS >= 7)
-  static inline void ignitionSchedule7Interrupt();
+  void ignitionSchedule7Interrupt();
 #endif
 #if (IGN_CHANNELS >= 8)
-  static inline void ignitionSchedule8Interrupt();
+  void ignitionSchedule8Interrupt();
 #endif
 #endif
 
@@ -190,75 +190,75 @@ extern Schedule ignitionSchedule8;
 
 //IgnitionSchedule nullSchedule; //This is placed at the end of the queue. It's status will always be set to OFF and hence will never perform any action within an ISR
 
-static inline unsigned int setQueue(volatile Schedule *queue[], Schedule *schedule1, Schedule *schedule2, unsigned int CNT)
-{
-  //Create an array of all the upcoming targets, relative to the current count on the timer
-  unsigned int tmpQueue[4];
+// unsigned int setQueue(volatile Schedule *queue[], Schedule *schedule1, Schedule *schedule2, unsigned int CNT)
+// {
+//   //Create an array of all the upcoming targets, relative to the current count on the timer
+//   unsigned int tmpQueue[4];
 
-  //Set the initial queue state. This order matches the tmpQueue order
-  if(schedule1->Status == OFF)
-  {
-    queue[0] = schedule2;
-    queue[1] = schedule2;
-    tmpQueue[0] = schedule2->startCompare - CNT;
-    tmpQueue[1] = schedule2->endCompare - CNT;
-  }
-  else
-  {
-    queue[0] = schedule1;
-    queue[1] = schedule1;
-    tmpQueue[0] = schedule1->startCompare - CNT;
-    tmpQueue[1] = schedule1->endCompare - CNT;
-  }
+//   //Set the initial queue state. This order matches the tmpQueue order
+//   if(schedule1->Status == OFF)
+//   {
+//     queue[0] = schedule2;
+//     queue[1] = schedule2;
+//     tmpQueue[0] = schedule2->startCompare - CNT;
+//     tmpQueue[1] = schedule2->endCompare - CNT;
+//   }
+//   else
+//   {
+//     queue[0] = schedule1;
+//     queue[1] = schedule1;
+//     tmpQueue[0] = schedule1->startCompare - CNT;
+//     tmpQueue[1] = schedule1->endCompare - CNT;
+//   }
 
-  if(schedule2->Status == OFF)
-  {
-    queue[2] = schedule1;
-    queue[3] = schedule1;
-    tmpQueue[2] = schedule1->startCompare - CNT;
-    tmpQueue[3] = schedule1->endCompare - CNT;
-  }
-  else
-  {
-    queue[2] = schedule2;
-    queue[3] = schedule2;
-    tmpQueue[2] = schedule2->startCompare - CNT;
-    tmpQueue[3] = schedule2->endCompare - CNT;
-  }
+//   if(schedule2->Status == OFF)
+//   {
+//     queue[2] = schedule1;
+//     queue[3] = schedule1;
+//     tmpQueue[2] = schedule1->startCompare - CNT;
+//     tmpQueue[3] = schedule1->endCompare - CNT;
+//   }
+//   else
+//   {
+//     queue[2] = schedule2;
+//     queue[3] = schedule2;
+//     tmpQueue[2] = schedule2->startCompare - CNT;
+//     tmpQueue[3] = schedule2->endCompare - CNT;
+//   }
 
 
-  //Sort the queues. Both queues are kept in sync.
-  //This implementes a sorting networking based on the Bose-Nelson sorting network
-  //See: pages.ripco.net/~jgamble/nw.html
-  #define SWAP(x,y) if(tmpQueue[y] < tmpQueue[x]) { unsigned int tmp = tmpQueue[x]; tmpQueue[x] = tmpQueue[y]; tmpQueue[y] = tmp; volatile Schedule *tmpS = queue[x]; queue[x] = queue[y]; queue[y] = tmpS; }
-  /*SWAP(0, 1); */ //Likely not needed
-  /*SWAP(2, 3); */ //Likely not needed
-  SWAP(0, 2);
-  SWAP(1, 3);
-  SWAP(1, 2);
+//   //Sort the queues. Both queues are kept in sync.
+//   //This implementes a sorting networking based on the Bose-Nelson sorting network
+//   //See: pages.ripco.net/~jgamble/nw.html
+//   #define SWAP(x,y) if(tmpQueue[y] < tmpQueue[x]) { unsigned int tmp = tmpQueue[x]; tmpQueue[x] = tmpQueue[y]; tmpQueue[y] = tmp; volatile Schedule *tmpS = queue[x]; queue[x] = queue[y]; queue[y] = tmpS; }
+//   /*SWAP(0, 1); */ //Likely not needed
+//   /*SWAP(2, 3); */ //Likely not needed
+//   SWAP(0, 2);
+//   SWAP(1, 3);
+//   SWAP(1, 2);
 
-  //Return the next compare time in the queue
-  return tmpQueue[0] + CNT; //Return the
-}
+//   //Return the next compare time in the queue
+//   return tmpQueue[0] + CNT; //Return the
+// }
 
-/*
- * Moves all the Schedules in a queue forward one position.
- * The current item (0) is discarded
- * The final queue slot is set to nullSchedule to indicate that no action should be taken
- */
-static inline unsigned int popQueue(volatile Schedule *queue[])
-{
-  queue[0] = queue[1];
-  queue[1] = queue[2];
-  queue[2] = queue[3];
-  //queue[3] = &nullSchedule;
+// /*
+//  * Moves all the Schedules in a queue forward one position.
+//  * The current item (0) is discarded
+//  * The final queue slot is set to nullSchedule to indicate that no action should be taken
+//  */
+// unsigned int popQueue(volatile Schedule *queue[])
+// {
+//   queue[0] = queue[1];
+//   queue[1] = queue[2];
+//   queue[2] = queue[3];
+//   //queue[3] = &nullSchedule;
 
-  unsigned int returnCompare;
-  if( queue[0]->Status == PENDING ) { returnCompare = queue[0]->startCompare; }
-  else { returnCompare = queue[0]->endCompare; }
+//   unsigned int returnCompare;
+//   if( queue[0]->Status == PENDING ) { returnCompare = queue[0]->startCompare; }
+//   else { returnCompare = queue[0]->endCompare; }
 
-  return returnCompare;
-}
+//   return returnCompare;
+// }
 
 
 #endif // SCHEDULER_H

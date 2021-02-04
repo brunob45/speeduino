@@ -11,10 +11,9 @@
 #include "comms.h"
 #include "src/FastCRC/FastCRC.h"
 
-namespace {
 FastCRC32 CRC32;
 uint8_t pinIsValid = 0;
-}
+uint16_t ioDelay[sizeof(configPage13.outputPin)];
 
 //This function performs a translation between the pin list that appears in TS and the actual pin numbers
 //For the digital IO, this will simply return the same number as the rawPin value as those are mapped directly.

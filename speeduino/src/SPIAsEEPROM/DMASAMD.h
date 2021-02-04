@@ -32,10 +32,10 @@ volatile dmacdescriptor wrb[12] __attribute__ ((aligned (16)));
 dmacdescriptor descriptor_section[12] __attribute__ ((aligned (16)));
 dmacdescriptor descriptor __attribute__ ((aligned (16)));
 
-static uint32_t chnltx = 0, chnlrx = 1; // DMA channels
+uint32_t chnltx = 0, chnlrx = 1; // DMA channels
 enum XfrType { DoTX, DoRX, DoTXRX};
-static XfrType xtype;
-static uint8_t rxsink[1], txsrc[1] = {0xFF};
+XfrType xtype;
+uint8_t rxsink[1], txsrc[1] = {0xFF};
 volatile uint32_t dmadone;
 
 void DMAC_Handler() {

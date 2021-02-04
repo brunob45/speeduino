@@ -27,12 +27,12 @@
 
 #define Flash(name, size) \
   __attribute__((__aligned__(256))) \
-  static const uint8_t PPCAT(_data,name)[(size+255)/256*256] = { }; \
+  const uint8_t PPCAT(_data,name)[(size+255)/256*256] = { }; \
   FlashClass name(PPCAT(_data,name), size);
 
 #define FlashStorage(name, T) \
   __attribute__((__aligned__(256))) \
-  static const uint8_t PPCAT(_data,name)[(sizeof(T)+255)/256*256] = { }; \
+  const uint8_t PPCAT(_data,name)[(sizeof(T)+255)/256*256] = { }; \
   FlashStorageClass<T> name(PPCAT(_data,name));
 
 class FlashClass {
@@ -62,14 +62,14 @@ public:
 
   // Write data into flash memory.
   // Compiler is able to optimize parameter copy.
-  inline void write(T data)  { flash.erase(); flash.write(&data); }
+  void write(T data)  { flash.erase(); flash.write(&data); }
 
   // Read data from flash into variable.
-  inline void read(T *data)  { flash.read(data); }
+  void read(T *data)  { flash.read(data); }
 
   // Overloaded version of read.
   // Compiler is able to optimize copy-on-return.
-  inline T read() { T data; read(&data); return data; }
+  T read() { T data; read(&data); return data; }
 
 private:
   FlashClass flash;

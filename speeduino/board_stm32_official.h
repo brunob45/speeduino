@@ -316,8 +316,8 @@ Example of using CAN2 as secondary CAN bus with alternative pins:
 STM32_CAN Can1 (_CAN2,ALT);
 */
 
-static CAN_message_t outMsg;
-static CAN_message_t inMsg;
+CAN_message_t outMsg;
+CAN_message_t inMsg;
 #endif
 
 #endif //CORE_STM32

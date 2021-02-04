@@ -133,8 +133,8 @@
   #define VVT_TIMER_COMPARE     PIT_LDVAL2
   #define VVT_TIMER_COUNTER     0
 
-  static inline void boostInterrupt();
-  static inline void vvtInterrupt();
+  void boostInterrupt();
+  void vvtInterrupt();
 
 /*
 ***********************************************************************************************************
@@ -146,7 +146,7 @@
   #define IDLE_TIMER_ENABLE() TMR3_CSCTRL1 |= TMR_CSCTRL_TCF1EN
   #define IDLE_TIMER_DISABLE() TMR3_CSCTRL1 &= ~TMR_CSCTRL_TCF1EN
 
-  static inline void idleInterrupt();
+  void idleInterrupt();
 
 /*
 ***********************************************************************************************************
@@ -157,8 +157,8 @@
   FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
   FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> Can1;
   FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> Can2;
-  static CAN_message_t outMsg;
-  static CAN_message_t inMsg;
+  CAN_message_t outMsg;
+  CAN_message_t inMsg;
   //#define NATIVE_CAN_AVAILABLE //Disable for now as it causes lockup 
   
 #endif //CORE_TEENSY

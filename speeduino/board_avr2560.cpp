@@ -1,4 +1,4 @@
-
+#include "globals.h"
 #if defined(CORE_AVR)
 #include "globals.h"
 #include "auxiliaries.h"

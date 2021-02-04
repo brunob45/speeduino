@@ -1,6 +1,8 @@
 #ifndef CRANKMATHS_H
 #define CRANKMATHS_H
 
+#include <Arduino.h>
+
 #define CRANKMATH_METHOD_INTERVAL_DEFAULT  0
 #define CRANKMATH_METHOD_INTERVAL_REV      1
 #define CRANKMATH_METHOD_INTERVAL_TOOTH    2
@@ -19,13 +21,13 @@ unsigned long angleToTime(int16_t, byte);
 uint16_t timeToAngle(unsigned long, byte);
 void doCrankSpeedCalcs();
 
-volatile uint16_t timePerDegree;
-volatile uint16_t timePerDegreex16;
-volatile uint16_t degreesPeruSx2048;
-volatile unsigned long degreesPeruSx32768;
+extern volatile uint16_t timePerDegree;
+extern volatile uint16_t timePerDegreex16;
+extern volatile uint16_t degreesPeruSx2048;
+extern volatile unsigned long degreesPeruSx32768;
 
 //These are only part of the experimental 2nd deriv calcs
-byte deltaToothCount = 0; //The last tooth that was used with the deltaV calc
-int rpmDelta;
+extern byte deltaToothCount; //The last tooth that was used with the deltaV calc
+extern int rpmDelta;
 
 #endif

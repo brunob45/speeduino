@@ -48,7 +48,7 @@ public:
   uint16_t read(uint32_t addr,uint8_t *buf,uint16_t n=256);
 
   void setWriteEnable(bool cmd = true);
-  inline void WE(bool cmd = true) {setWriteEnable(cmd);}
+  void WE(bool cmd = true) {setWriteEnable(cmd);}
   
   //WE() every time before write or erase
   void writePage(uint32_t addr_start,uint8_t *buf, uint16_t n);//addr is 8bit-aligned, 0x00ffff00
@@ -87,16 +87,16 @@ class winbondFlashSPI: public winbondFlashClass {
 private:
   uint8_t nss;
   SPIClass *spi_port;
-  inline void select() {
+  void select() {
     digitalWrite(nss,LOW);
   }
 
-  inline uint8_t transfer(uint8_t x) {
+  uint8_t transfer(uint8_t x) {
     byte y = spi_port->transfer(x);
     return y;
   }
 
-  inline void deselect() {
+  void deselect() {
     digitalWrite(nss,HIGH);
   }
 

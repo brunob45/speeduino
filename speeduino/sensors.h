@@ -32,9 +32,9 @@
 #endif
 */
 
-volatile byte flexCounter = 0;
-volatile unsigned long flexStartTime;
-volatile unsigned long flexPulseWidth;
+extern volatile byte flexCounter;
+extern volatile unsigned long flexStartTime;
+extern volatile unsigned long flexPulseWidth;
 
 #if defined(CORE_AVR)
   #define READ_FLEX() ((*flex_pin_port & flex_pin_mask) ? true : false)
@@ -42,30 +42,29 @@ volatile unsigned long flexPulseWidth;
   #define READ_FLEX() digitalRead(pinFlex)
 #endif
 
-volatile byte knockCounter = 0;
-volatile uint16_t knockAngle;
+extern volatile byte knockCounter;
+extern volatile uint16_t knockAngle;
 
-unsigned long MAPrunningValue; //Used for tracking either the total of all MAP readings in this cycle (Event average) or the lowest value detected in this cycle (event minimum)
-unsigned long EMAPrunningValue; //As above but for EMAP
-unsigned int MAPcount; //Number of samples taken in the current MAP cycle
-uint32_t MAPcurRev; //Tracks which revolution we're sampling on
-bool auxIsEnabled;
-byte TPSlast; /**< The previous TPS reading */
-unsigned long TPS_time; //The time the TPS sample was taken
-unsigned long TPSlast_time; //The time the previous TPS sample was taken
-byte MAPlast; /**< The previous MAP reading */
-unsigned long MAP_time; //The time the MAP sample was taken
-unsigned long MAPlast_time; //The time the previous MAP sample was taken
-volatile unsigned long vssLastPulseTime; /**< The time of the last VSS pulse of the VSS */
-volatile unsigned long vssLastMinusOnePulseTime; /**< The time of the last VSS_NUM_SAMPLES pulses of the VSS are stored in this array */
-volatile unsigned long vssTotalTime; /**< Cumulative count of the last VSS_SAMPLES number of pulses */
-volatile byte vssCount;
-
+extern unsigned long MAPrunningValue; //Used for tracking either the total of all MAP readings in this cycle (Event average) or the lowest value detected in this cycle (event minimum)
+extern unsigned long EMAPrunningValue; //As above but for EMAP
+extern unsigned int MAPcount; //Number of samples taken in the current MAP cycle
+extern uint32_t MAPcurRev; //Tracks which revolution we're sampling on
+extern bool auxIsEnabled;
+extern byte TPSlast; /**< The previous TPS reading */
+extern unsigned long TPS_time; //The time the TPS sample was taken
+extern unsigned long TPSlast_time; //The time the previous TPS sample was taken
+extern byte MAPlast; /**< The previous MAP reading */
+extern unsigned long MAP_time; //The time the MAP sample was taken
+extern unsigned long MAPlast_time; //The time the previous MAP sample was taken
+extern volatile unsigned long vssLastPulseTime; /**< The time of the last VSS pulse of the VSS */
+extern volatile unsigned long vssLastMinusOnePulseTime; /**< The time of the last VSS_NUM_SAMPLES pulses of the VSS are stored in this array */
+extern volatile unsigned long vssTotalTime; /**< Cumulative count of the last VSS_SAMPLES number of pulses */
+extern volatile byte vssCount;
 
 //These variables are used for tracking the number of running sensors values that appear to be errors. Once a threshold is reached, the sensor reading will go to default value and assume the sensor is faulty
-byte mapErrorCount = 0;
-byte iatErrorCount = 0;
-byte cltErrorCount = 0;
+extern byte mapErrorCount;
+extern byte iatErrorCount;
+extern byte cltErrorCount;
 
 /**
  * @brief Simple low pass IIR filter macro for the analog inputs
