@@ -4,6 +4,9 @@
  * The command handler manages all the inputs FROM TS which are issued when a command button is clicked by the user
  */
 
+#if !defined(TS_COMMAND_BUTTON_HANDLER_H)
+#define TS_COMMAND_BUTTON_HANDLER_H
+
 #define TS_CMD_TEST_DSBL  256
 #define TS_CMD_TEST_ENBL  257
 
@@ -69,3 +72,5 @@
 #define TS_CMD_VSS_RATIO6 39174
 
 void TS_CommandButtonsHandler(int);
+
+#endif // TS_COMMAND_BUTTON_HANDLER_H
